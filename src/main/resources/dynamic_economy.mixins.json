@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "dynamic_economy.refmap.json",
   "mixins": [
+    "MixinAbstractArrow",
     "MixinHopperBlockEntity",
     "MixinMerchantResultSlot"
   ],
