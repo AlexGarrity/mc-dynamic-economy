@@ -1,0 +1,27 @@
+{
+  "display": {
+    "icon": {
+      "item": "dynamic_economy:fixed_currency",
+      "nbt": "{\"value\": 50}"
+    },
+    "title": {
+      "translate": "advancements.dynamic_economy.root.title"
+    },
+    "description": {
+      "translate": "advancements.dynamic_economy.root.description"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png"
+  },
+  "criteria": {
+    "has_item": {
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    ["has_item"]
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "parent": "dynamic_economy:economy/root",
+  "display": {
+    "icon": {
+      "item": "dynamic_economy:fixed_currency",
+      "nbt": "{\"decoration\": 0}"
+    },
+    "title": {
+      "translate": "advancements.dynamic_economy.get_money.title"
+    },
+    "description": {
+      "translate": "advancements.dynamic_economy.get_money.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_currency": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "dynamic_economy:currency"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    ["has_currency"]
+  ]
+}

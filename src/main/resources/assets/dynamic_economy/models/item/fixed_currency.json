@@ -1,0 +1,408 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "dynamic_economy:item/coin_ext_stone"
+  },
+  "display": {
+    "firstperson_lefthand": {
+      "translation": [0, 1.5, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "firstperson_righthand": {
+      "translation": [0, 1.5, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "thirdperson_lefthand": {
+      "translation": [0, 1.5, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "thirdperson_righthand": {
+      "translation": [0, 1.5, 0],
+      "scale": [0.25, 0.25, 0.25]
+    },
+    "ground": {
+      "translation": [0, 1, 0],
+      "scale": [0.25, 0.25, 0.25]
+    }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "dynamic_economy:value": 1
+      },
+      "model": "dynamic_economy:item/coin_stone_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 2
+      },
+      "model": "dynamic_economy:item/coin_copper_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 5
+      },
+      "model": "dynamic_economy:item/coin_iron_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 10
+      },
+      "model": "dynamic_economy:item/coin_gold_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 20
+      },
+      "model": "dynamic_economy:item/coin_gold_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 50
+      },
+      "model": "dynamic_economy:item/coin_gold_redstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 100
+      },
+      "model": "dynamic_economy:item/coin_gold_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 200
+      },
+      "model": "dynamic_economy:item/coin_gold_emerald"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 500
+      },
+      "model": "dynamic_economy:item/note_coal"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 1000
+      },
+      "model": "dynamic_economy:item/note_copper"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 2000
+      },
+      "model": "dynamic_economy:item/note_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 5000
+      },
+      "model": "dynamic_economy:item/note_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:value": 10000
+      },
+      "model": "dynamic_economy:item/note_redstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 5
+      },
+      "model": "dynamic_economy:item/coin_stone_amethyst"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 1
+      },
+      "model": "dynamic_economy:item/coin_stone_copper"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 7
+      },
+      "model": "dynamic_economy:item/coin_stone_diamond"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 6
+      },
+      "model": "dynamic_economy:item/coin_stone_emerald"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 9
+      },
+      "model": "dynamic_economy:item/coin_stone_glowstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 2
+      },
+      "model": "dynamic_economy:item/coin_stone_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 4
+      },
+      "model": "dynamic_economy:item/coin_stone_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 0
+      },
+      "model": "dynamic_economy:item/coin_stone_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 8
+      },
+      "model": "dynamic_economy:item/coin_stone_quartz"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 3
+      },
+      "model": "dynamic_economy:item/coin_stone_redstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 15
+      },
+      "model": "dynamic_economy:item/coin_copper_amethyst"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 11
+      },
+      "model": "dynamic_economy:item/coin_copper_copper"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 17
+      },
+      "model": "dynamic_economy:item/coin_copper_diamond"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 16
+      },
+      "model": "dynamic_economy:item/coin_copper_emerald"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 19
+      },
+      "model": "dynamic_economy:item/coin_copper_glowstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 12
+      },
+      "model": "dynamic_economy:item/coin_copper_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 14
+      },
+      "model": "dynamic_economy:item/coin_copper_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 10
+      },
+      "model": "dynamic_economy:item/coin_copper_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 18
+      },
+      "model": "dynamic_economy:item/coin_copper_quartz"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 13
+      },
+      "model": "dynamic_economy:item/coin_copper_redstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 25
+      },
+      "model": "dynamic_economy:item/coin_iron_amethyst"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 21
+      },
+      "model": "dynamic_economy:item/coin_iron_copper"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 27
+      },
+      "model": "dynamic_economy:item/coin_iron_diamond"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 26
+      },
+      "model": "dynamic_economy:item/coin_iron_emerald"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 29
+      },
+      "model": "dynamic_economy:item/coin_iron_glowstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 22
+      },
+      "model": "dynamic_economy:item/coin_iron_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 24
+      },
+      "model": "dynamic_economy:item/coin_iron_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 20
+      },
+      "model": "dynamic_economy:item/coin_iron_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 28
+      },
+      "model": "dynamic_economy:item/coin_iron_quartz"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 23
+      },
+      "model": "dynamic_economy:item/coin_iron_redstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 35
+      },
+      "model": "dynamic_economy:item/coin_gold_amethyst"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 31
+      },
+      "model": "dynamic_economy:item/coin_gold_copper"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 37
+      },
+      "model": "dynamic_economy:item/coin_gold_diamond"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 36
+      },
+      "model": "dynamic_economy:item/coin_gold_emerald"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 39
+      },
+      "model": "dynamic_economy:item/coin_gold_glowstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 32
+      },
+      "model": "dynamic_economy:item/coin_gold_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 34
+      },
+      "model": "dynamic_economy:item/coin_gold_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 30
+      },
+      "model": "dynamic_economy:item/coin_gold_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 38
+      },
+      "model": "dynamic_economy:item/coin_gold_quartz"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 33
+      },
+      "model": "dynamic_economy:item/coin_gold_redstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 45
+      },
+      "model": "dynamic_economy:item/coin_netherite_amethyst"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 41
+      },
+      "model": "dynamic_economy:item/coin_netherite_copper"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 47
+      },
+      "model": "dynamic_economy:item/coin_netherite_diamond"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 46
+      },
+      "model": "dynamic_economy:item/coin_netherite_emerald"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 49
+      },
+      "model": "dynamic_economy:item/coin_netherite_glowstone"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 42
+      },
+      "model": "dynamic_economy:item/coin_netherite_iron"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 44
+      },
+      "model": "dynamic_economy:item/coin_netherite_lapis"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 40
+      },
+      "model": "dynamic_economy:item/coin_netherite_none"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 48
+      },
+      "model": "dynamic_economy:item/coin_netherite_quartz"
+    },
+    {
+      "predicate": {
+        "dynamic_economy:decoration": 43
+      },
+      "model": "dynamic_economy:item/coin_netherite_redstone"
+    }
+  ]
+}

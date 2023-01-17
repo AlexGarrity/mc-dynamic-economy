@@ -1,0 +1,71 @@
+{
+
+  "itemGroup.currency": "Currency",
+  "item.dynamic_economy.fixed_currency": "Crown",
+  "item.dynamic_economy.dynamic_currency": "Credit Note",
+  "item.dynamic_economy.animal_villager_spawn_egg": "Animal Villager Spawn Egg",
+
+  "entity.dynamic_economy.animal_villager": "Animal Villager",
+  "entity.dynamic_economy.animal_villager.banker": "Banker",
+  "entity.dynamic_economy.animal_villager.assessor": "Assessor",
+  "entity.dynamic_economy.animal_villager.trader": "Trader",
+
+  "advancements.dynamic_economy.root.title": "Economy",
+  "advancements.dynamic_economy.root.description": "Participating in economic activities",
+
+  "advancements.dynamic_economy.get_money.title": "Get Money",
+  "advancements.dynamic_economy.get_money.description": "Obtain physical currency",
+
+  "advancements.dynamic_economy.sell_item.title": "I wanted a peanut!",
+  "advancements.dynamic_economy.sell_item.description": "Money can be exchanged for goods and services",
+
+  "advancements.dynamic_economy.buy_item.title": "Retail Therapy",
+  "advancements.dynamic_economy.buy_item.description":  "Buy an item",
+
+  "advancements.dynamic_economy.breed_villagers.title": "The Pennies and the Pounds",
+  "advancements.dynamic_economy.breed_villagers.description": "Putting the seed in seed funding",
+
+  "advancements.dynamic_economy.money_1e3.title": "Not Broke",
+  "advancements.dynamic_economy.money_1e3.description": "Have 1000 Crowns",
+
+  "advancements.dynamic_economy.money_1e4.title": "Ten Thousandaire..?",
+  "advancements.dynamic_economy.money_1e4.description": "Have 10000 Crowns",
+
+  "advancements.dynamic_economy.money_1e5.title": "Hundred Thousandaire..?",
+  "advancements.dynamic_economy.money_1e5.description": "Have 100000 Crowns",
+
+  "advancements.dynamic_economy.money_1e6.title": "Millionaire",
+  "advancements.dynamic_economy.money_1e6.description": "Have 1000000 Crowns",
+
+  "gui.dynamic_economy.symbol.currency_major": "Ħ",
+  "gui.dynamic_economy.symbol.currency_minor": "¤",
+
+  "gui.dynamic_economy.currency_name_minor": "Crown",
+  "gui.dynamic_economy.currency_name_minor_plural": "Crowns",
+
+  "gui.dynamic_economy.currency_name_major": "Crown",
+  "gui.dynamic_economy.currency_name_major_plural": "Crowns",
+
+  "gui.dynamic_economy.item_valuation.message": "I'd say that's worth ",
+
+  "gui.dynamic_economy.tooltip.value": "Last Known Value",
+  "gui.dynamic_economy.tooltip.priceless": "Priceless",
+
+  "gui.dynamic_economy.banking.deposit": "Deposit",
+  "gui.dynamic_economy.banking.balance": "Balance",
+  "gui.dynamic_economy.banking.welcome": "Welcome",
+  "gui.dynamic_economy.banking.quantity": "Quantity",
+  "gui.dynamic_economy.banking.withdraw": "Withdraw",
+
+  "gui.dynamic_economy.trading.balance": "Inventory Balance",
+
+  "gui.dynamic_economy.assess.value": "Value",
+  "gui.dynamic_economy.assess.rarity": "Rarity",
+  "gui.dynamic_economy.assess.rarity.unknown": "Unknown",
+  "gui.dynamic_economy.assess.rarity.legendary": "Legendary",
+  "gui.dynamic_economy.assess.rarity.epic": "Epic",
+  "gui.dynamic_economy.assess.rarity.rare": "Super Rare",
+  "gui.dynamic_economy.assess.rarity.uncommon": "Rare",
+  "gui.dynamic_economy.assess.rarity.common": "Uncommon",
+  "gui.dynamic_economy.assess.rarity.poor": "Common"
+}

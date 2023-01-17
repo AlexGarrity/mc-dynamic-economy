@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.agarrity.dynamic_economy.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "dynamic_economy.refmap.json",
+  "mixins": [
+    "MixinHopperBlockEntity",
+    "MixinMerchantResultSlot"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

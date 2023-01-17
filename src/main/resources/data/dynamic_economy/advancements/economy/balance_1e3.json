@@ -1,0 +1,30 @@
+{
+  "parent": "dynamic_economy:economy/root",
+  "display": {
+    "icon": {
+      "item": "dynamic_economy:fixed_currency",
+      "nbt": "{\"decoration\": 33}"
+    },
+    "title": {
+      "translate": "advancements.dynamic_economy.money_1e3.title"
+    },
+    "description": {
+      "translate": "advancements.dynamic_economy.money_1e3.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "has_currency_1e3": {
+      "trigger": "dynamic_economy:has_balance",
+      "conditions": {
+        "amount": 1000
+      }
+    }
+  },
+  "requirements": [
+    ["has_currency_1e3"]
+  ]
+}

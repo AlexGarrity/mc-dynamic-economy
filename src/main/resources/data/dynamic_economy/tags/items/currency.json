@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "dynamic_economy:fixed_currency",
+    "dynamic_economy:dynamic_currency"
+  ]
+}
