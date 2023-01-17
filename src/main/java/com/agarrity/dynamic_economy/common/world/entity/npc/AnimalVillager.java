@@ -25,7 +25,9 @@ import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -33,6 +35,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -44,6 +47,9 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class AnimalVillager extends Animal implements ITrader {
 
@@ -262,5 +268,21 @@ public class AnimalVillager extends Animal implements ITrader {
 
     public SoundEvent getNotifyTradeSound() {
         return SoundEvents.VILLAGER_YES;
+    }
+
+    @Override
+    protected void dropAllDeathLoot(DamageSource pDamageSource) {
+        Entity entity = pDamageSource.getEntity();
+        int i = net.minecraftforge.common.ForgeHooks.getLootingLevel(this, entity, pDamageSource);
+
+        Collection<ItemEntity> drops = new ArrayList<>();
+        for (var slotIndex = 0; slotIndex < this.inventory.getSlots(); ++slotIndex) {
+            if (!this.inventory.getStackInSlot(slotIndex).isEmpty()) {
+                drops.add(new ItemEntity(this.level, this.getX(), this.getY(), this.getZ(), this.inventory.getStackInSlot(slotIndex)));
+            }
+        }
+
+        if (!net.minecraftforge.common.ForgeHooks.onLivingDrops(this, pDamageSource, drops, i, lastHurtByPlayerTime > 0))
+            drops.forEach(e -> level.addFreshEntity(e));
     }
 }
