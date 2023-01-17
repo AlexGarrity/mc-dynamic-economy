@@ -34,18 +34,6 @@ public class WorldResourceTracker {
     }
 
     /**
-     * Unregister a block as finite (there are an infinite quantity in the world)
-     * @param blockName The registry name of the block to unregister
-     */
-    public static void unregisterFiniteBlock(@NotNull final String blockName) {
-        if (FINITE_BLOCKS.contains(blockName)) {
-            DynamicEconomy.LOGGER.debug("Unregistered {} as finite", blockName);
-            FINITE_BLOCKS.remove(blockName);
-            SAVED_DATA.getBlocksInWorld().remove(blockName);
-        }
-    }
-
-    /**
      * Add a block to the world without logging it, provided that it's finite
      * @param block The block to add to the world
      * @return true if the block was added, false otherwise
@@ -180,38 +168,6 @@ public class WorldResourceTracker {
     }
 
     /**
-     * Add an item to the resource tracker's virtual economy
-     * @param stack The stack of items to add
-     */
-    public static void addItemsToVirtualEconomy(@NotNull final ItemStack stack) {
-        addItemsToVirtualEconomy(stack, stack.getCount());
-    }
-
-    /**
-     * Add an item to the resource tracker's virtual economy
-     * @param stack The stack of items to add
-     * @param count The number of items to add
-     */
-    public static void addItemsToVirtualEconomy(@NotNull final ItemStack stack, int count) {
-        if (stack.getItem().getRegistryName() == null) {
-            return;
-        }
-
-        final var itemName = stack.getItem().getRegistryName().toString();
-        if (SAVED_DATA.getVirtualItems().containsKey(itemName)) {
-            final var existingCount = SAVED_DATA.getItemsInWorld().get(itemName);
-            SAVED_DATA.getVirtualItems().put(itemName, existingCount + count);
-        }
-        else {
-            SAVED_DATA.getVirtualItems().put(itemName, count);
-        }
-
-
-        DynamicEconomy.LOGGER.debug("ADDED {} of '{}' TO THE VIRTUAL ECONOMY", stack.getCount(), itemName);
-        SAVED_DATA.setDirty();
-    }
-
-    /**
      * Remove an item from the resource tracker's economy
      * @param stack The item to remove
      */
@@ -237,9 +193,9 @@ public class WorldResourceTracker {
         }
 
         final var existingCount = SAVED_DATA.getItemsInWorld().get(itemName);
-        if (existingCount < stack.getCount()) {
+        if (existingCount < count) {
             SAVED_DATA.getItemsInWorld().remove(itemName);
-            DynamicEconomy.LOGGER.debug("Tried to remove {} from the economy, but there were only {} to remove", stack, existingCount);
+            DynamicEconomy.LOGGER.debug("Tried to remove {} of '{}' from the economy, but there were only {} to remove", count, itemName, existingCount);
             return;
         }
 
@@ -250,47 +206,7 @@ public class WorldResourceTracker {
             SAVED_DATA.getItemsInWorld().put(itemName, existingCount - count);
         }
 
-        DynamicEconomy.LOGGER.debug("Removed {} from the economy", stack);
-        SAVED_DATA.setDirty();
-    }
-
-    /**
-     * Remove an item from the resource tracker's virtual economy
-     * @param stack The item to remove
-     */
-    public static void removeItemsFromVirtualEconomy(@NotNull ItemStack stack) {
-        removeItemsFromVirtualEconomy(stack, stack.getCount());
-    }
-
-    /**
-     * Remove a stack of items from the resource tracker's virtual economy
-     * @param stack The stack of items to remove
-     * @param count The number of items to remove
-     */
-    public static void removeItemsFromVirtualEconomy(@NotNull ItemStack stack, int count) {
-        if (stack.getItem().getRegistryName() == null) {
-            return;
-        }
-
-        final var itemName = stack.getItem().getRegistryName().toString();
-
-        if (!SAVED_DATA.getVirtualItems().containsKey(itemName)) {
-            return;
-        }
-
-        final var existingCount = SAVED_DATA.getVirtualItems().get(itemName);
-        if (existingCount > stack.getCount()) {
-            return;
-        }
-
-        if (existingCount.equals(count)) {
-            SAVED_DATA.getVirtualItems().remove(itemName);
-        }
-        else {
-            SAVED_DATA.getVirtualItems().put(itemName, existingCount - count);
-        }
-
-        DynamicEconomy.LOGGER.debug("REMOVED {} of '{}' FROM THE VIRTUAL ECONOMY", stack.getCount(), itemName);
+        DynamicEconomy.LOGGER.debug("Removed {} of '{}' from the economy", count, itemName);
         SAVED_DATA.setDirty();
     }
 
@@ -365,41 +281,6 @@ public class WorldResourceTracker {
     }
 
     /**
-     * Estimate the value of a block
-     * @param block The block to estimate the value of
-     * @return An empty optional if none of the block type legitimately exist, or the estimated value otherwise
-     */
-    public static Optional<CurrencyAmount> estimateBlockValue(@NotNull final Block block) {
-        if (block.getRegistryName() == null) {
-            return Optional.empty();
-        }
-
-        final var blockName = block.getRegistryName().toString();
-        if (!SAVED_DATA.getItemsInWorld().containsKey(blockName)) {
-            return Optional.empty();
-        }
-
-        final var value = getPoolSize() / SAVED_DATA.getItemsInWorld().get(blockName);
-        return Optional.of(new CurrencyAmount(value));
-    }
-
-    /**
-     * Estimate the value of a number of blocks
-     * @param block The block type
-     * @param count The number of blocks to estimate the value of
-     * @return An empty optional if none of the block type legitimately exist, or the estimated value otherwise
-     */
-    public static Optional<CurrencyAmount> estimateBlocksValue(@NotNull final Block block, final int count) {
-        final var singleBlockValue = estimateBlockValue(block);
-        if (singleBlockValue.isEmpty()) {
-            return singleBlockValue;
-        }
-
-        final var value = singleBlockValue.get().asLong();
-        return Optional.of(new CurrencyAmount(value * count));
-    }
-
-    /**
      * Get the logarithmic frequency of an item based on the number that exist in the economy
      * (ie. if 10 exist then the frequency is 1, if 100 exist then the frequency is 2, ...)
      * @param stack The item type to get the frequency of
@@ -417,23 +298,6 @@ public class WorldResourceTracker {
 
         final var existingCount = SAVED_DATA.getItemsInWorld().get(itemName);
         return Optional.of((int) Math.log10(existingCount));
-    }
-
-    /**
-     * Get the logarithmic frequency of an item based on the number that could theoretically exist in the economy
-     * @param stack The item type to get the max frequency of
-     * @return An empty optional if none of the item legitimately exist, otherwise the theoretical frequency
-     */
-    public static Optional<Integer> getTheoreticalRarity(@NotNull final ItemStack stack) {
-        if (stack.getItem().getRegistryName() == null) {
-            return Optional.empty();
-        }
-
-        final var itemName = stack.getItem().getRegistryName().toString();
-        final var economyItems = SAVED_DATA.getItemsInWorld().getOrDefault(itemName, 0);
-        final var worldItems = SAVED_DATA.getBlocksInWorld().getOrDefault(itemName, 0);
-
-        return Optional.of((int) Math.log10(worldItems + economyItems));
     }
 
 }
