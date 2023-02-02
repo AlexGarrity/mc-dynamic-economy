@@ -2,6 +2,7 @@ package com.agarrity.dynamic_economy.common.listeners;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.DynamicEconomyConfig;
+import com.agarrity.dynamic_economy.common.economy.bag.CoinBagSavedData;
 import com.agarrity.dynamic_economy.common.economy.bank.Bank;
 import com.agarrity.dynamic_economy.common.economy.bank.BankSavedData;
 import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
@@ -47,6 +48,8 @@ public class WorldEventListener {
 
             final var bankSavedData = serverLevel.getDataStorage().computeIfAbsent(BankSavedData::load, BankSavedData::create, "dynamic_economy_bank");
             Bank.setSavedData(bankSavedData);
+
+            CoinBagSavedData.instance = serverLevel.getDataStorage().computeIfAbsent(CoinBagSavedData::load, CoinBagSavedData::create, "dynamic_economy_bags");
         }
     }
 
@@ -95,6 +98,7 @@ public class WorldEventListener {
 
         final var block = event.getPlacedBlock().getBlock();
         final var stackToRemove = new ItemStack(block.asItem(), 1);
+
         WorldResourceTracker.removeItemsFromEconomy(stackToRemove);
         WorldResourceTracker.addBlockToWorld(block);
     }

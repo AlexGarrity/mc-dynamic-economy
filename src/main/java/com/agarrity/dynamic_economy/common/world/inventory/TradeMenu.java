@@ -2,11 +2,9 @@ package com.agarrity.dynamic_economy.common.world.inventory;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.DynamicEconomyConfig;
-import com.agarrity.dynamic_economy.common.economy.bank.Bank;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
-import com.agarrity.dynamic_economy.common.network.ClientboundBalanceMessage;
 import com.agarrity.dynamic_economy.common.network.ClientboundItemValueMessage;
 import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
 import com.agarrity.dynamic_economy.common.world.entity.npc.AnimalVillager;
@@ -28,12 +26,12 @@ import net.minecraftforge.network.NetworkDirection;
 import org.antlr.v4.runtime.misc.OrderedHashSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.TreeMap;
 
 public class TradeMenu extends AbstractContainerMenu {
 
     private final Player player;
-    private final UUID playerUUID;
     private final ITrader traderVillager;
     private final IItemHandler traderInventory;
 
@@ -45,7 +43,6 @@ public class TradeMenu extends AbstractContainerMenu {
         super(MenuInit.TRADER_MENU.get(), containerId);
         this.traderVillager = trader;
         this.player = playerInventory.player;
-        this.playerUUID = player.getUUID();
         this.traderInventory = traderInventory;
 
         final var playerInventoryItems = new HashSet<Item>();
@@ -92,10 +89,7 @@ public class TradeMenu extends AbstractContainerMenu {
                         continue;
                     }
 
-                    final var optValue = WorldResourceTracker.estimateItemValue(itemStack);
-                    final var optRarity = WorldResourceTracker.getItemFrequency(itemStack);
-
-                    playerInventoryItems.add(this.traderInventory.getStackInSlot(x + (y*4)).getItem());
+                    playerInventoryItems.add(this.traderInventory.getStackInSlot(x + (y * 4)).getItem());
                 }
             }
         }
@@ -112,9 +106,6 @@ public class TradeMenu extends AbstractContainerMenu {
                 if (itemStack == ItemStack.EMPTY) {
                     continue;
                 }
-
-                final var optValue = WorldResourceTracker.estimateItemValue(itemStack);
-                final var optRarity = WorldResourceTracker.getItemFrequency(itemStack);
 
                 playerInventoryItems.add(playerInventory.getItem(j + i * 9 + 9).getItem());
             }
@@ -166,7 +157,7 @@ public class TradeMenu extends AbstractContainerMenu {
     public @NotNull ItemStack quickMoveStack(@NotNull final Player pPlayer, final int pIndex) {
         var itemStack = ItemStack.EMPTY;
         final var slot = this.slots.get(pIndex);
-        if (slot != null && slot.hasItem()) {
+        if (slot.hasItem()) {
             final var itemStack1 = slot.getItem();
             itemStack = itemStack1.copy();
             if (pIndex < this.traderInventory.getSlots()) {
@@ -333,7 +324,7 @@ public class TradeMenu extends AbstractContainerMenu {
             final var slot = player.getInventory().items.get(index);
             if (slot.getItem() == ItemInit.FIXED_CURRENCY.get()) {
                 final var itemValue = CurrencyHelper.getCurrencyValue(slot).orElse(new CurrencyAmount()).asLong();
-                fixedMap.put(itemValue, (fixedMap.containsKey(itemValue))?fixedMap.get(itemValue) + slot.getCount(): slot.getCount());
+                fixedMap.put(itemValue, (fixedMap.containsKey(itemValue)) ? fixedMap.get(itemValue) + slot.getCount() : slot.getCount());
                 totalValue += itemValue * slot.getCount();
                 currencySlotIndices.add(index);
             }
@@ -351,8 +342,7 @@ public class TradeMenu extends AbstractContainerMenu {
                 if (currencyRequired.containsKey(currencyAmount)) {
                     final var existingValue = currencyRequired.get(currencyAmount);
                     currencyRequired.put(currencyAmount, existingValue + 1);
-                }
-                else {
+                } else {
                     currencyRequired.put(currencyAmount, 1);
                 }
             }
@@ -366,8 +356,7 @@ public class TradeMenu extends AbstractContainerMenu {
                 if (slot.getCount() >= quantityOfCurrencyRequired) {
                     slot.setCount(slot.getCount() - quantityOfCurrencyRequired);
                     currencyRequired.remove(itemValue);
-                }
-                else {
+                } else {
                     currencyRequired.put(itemValue, quantityOfCurrencyRequired - slot.getCount());
                     slot.setCount(0);
                 }

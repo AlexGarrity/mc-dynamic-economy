@@ -3,6 +3,7 @@
   "itemGroup.currency": "Currency",
   "item.dynamic_economy.fixed_currency": "Crown",
   "item.dynamic_economy.dynamic_currency": "Credit Note",
+  "item.dynamic_economy.coin_bag": "Coin Purse",
   "item.dynamic_economy.animal_villager_spawn_egg": "Animal Villager Spawn Egg",
 
   "entity.dynamic_economy.animal_villager": "Animal Villager",
@@ -50,6 +51,8 @@
 
   "gui.dynamic_economy.tooltip.value": "Last Known Value",
   "gui.dynamic_economy.tooltip.priceless": "Priceless",
+
+  "gui.dynamic_economy.coin_bag.title": "Coin Purse",
 
   "gui.dynamic_economy.banking.deposit": "Deposit",
   "gui.dynamic_economy.banking.balance": "Balance",

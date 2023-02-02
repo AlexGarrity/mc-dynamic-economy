@@ -6,18 +6,22 @@ import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
 import com.agarrity.dynamic_economy.common.world.entity.npc.AnimalVillager;
+import com.agarrity.dynamic_economy.init.ItemInit;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 @Mod.EventBusSubscriber(modid = DynamicEconomy.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class InventoryEventListener {
@@ -54,11 +58,6 @@ public class InventoryEventListener {
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public static void onVillagerTrade(VillagerTradesEvent event) {
-
-    }
-
     /**
      * Called when a player drops an item
      *
@@ -71,6 +70,15 @@ public class InventoryEventListener {
         }
 
         final var itemStack = event.getEntityItem().getItem();
+        processShulkerBoxContents(itemStack, false);
+
+        if (itemStack.getItem() == ItemInit.COIN_BAG.get()) {
+            // Cancel the event so it never hits the ground
+            event.setCanceled(true);
+            event.getPlayer().addItem(itemStack);
+            return;
+        }
+
         WorldResourceTracker.removeItemsFromEconomy(itemStack);
     }
 
@@ -86,8 +94,48 @@ public class InventoryEventListener {
         }
 
         DynamicEconomy.LOGGER.debug("Pickup items event");
-        final var item = event.getStack();
-        WorldResourceTracker.addItemsToEconomy(item);
+        final var itemStack = event.getStack();
+        processShulkerBoxContents(itemStack, true);
+
+
+        WorldResourceTracker.addItemsToEconomy(itemStack);
+    }
+
+    private static void processShulkerBoxContents(ItemStack itemStack, boolean isPickUp) {
+        if (itemStack.hasTag()) {
+            final var nbtTag = itemStack.getTag();
+            if (nbtTag == null) {
+                return;
+            }
+            if (!nbtTag.contains("BlockEntityTag")) {
+                return;
+            }
+            final var blockEntityTag = nbtTag.getCompound("BlockEntityTag");
+            final var itemsTag = blockEntityTag.getList("Items", Tag.TAG_COMPOUND);
+            for (var i = 0; i < itemsTag.size(); ++i) {
+                final var itemTag = itemsTag.getCompound(i);
+                final var count = itemTag.getInt("Count");
+                final var id = itemTag.getString("id");
+
+                if (id.isBlank() || count == 0) {
+                    continue;
+                }
+
+                if (id.equals("minecraft:air")) {
+                    continue;
+                }
+
+                if (isPickUp) {
+                    WorldResourceTracker.addItemsToEconomy(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                            new ResourceLocation(id)
+                    )), count);
+                } else {
+                    WorldResourceTracker.removeItemsFromEconomy(new ItemStack(ForgeRegistries.ITEMS.getValue(
+                            new ResourceLocation(id)
+                    )), count);
+                }
+            }
+        }
     }
 
     /**
@@ -147,9 +195,7 @@ public class InventoryEventListener {
         final var optValue = CurrencyHelper.getCurrencyValue(itemStack);
         final var isSpecial = CurrencyHelper.isCurrencySpecial(itemStack);
 
-        // Item is fixed-value currency
-
-
+        // Item is commemorative currency
         if (isSpecial) {
             final var textSingle = new TranslatableComponent("gui.dynamic_economy.tooltip.value");
             textSingle.withStyle(ChatFormatting.WHITE);
@@ -161,6 +207,8 @@ public class InventoryEventListener {
 
             event.getToolTip().add(textSingle);
         }
+
+        // Item is some form of currency
         if (optValue.isPresent()) {
             final var textSingle = new TranslatableComponent("gui.dynamic_economy.tooltip.value");
             if (itemStack.getCount() > 1) {
@@ -177,7 +225,9 @@ public class InventoryEventListener {
                 ).withStyle(ChatFormatting.WHITE);
                 event.getToolTip().add(textMultiple);
             }
-        } else {
+
+        }
+        else {
             if (item.getRegistryName() == null) {
                 return;
             }

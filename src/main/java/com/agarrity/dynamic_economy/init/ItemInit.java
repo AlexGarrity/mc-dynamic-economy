@@ -2,6 +2,7 @@ package com.agarrity.dynamic_economy.init;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
+import com.agarrity.dynamic_economy.common.world.item.CoinBag;
 import com.agarrity.dynamic_economy.common.world.item.CurrencyTab;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -24,9 +25,13 @@ public class ItemInit {
     public static final RegistryObject<Item> DYNAMIC_CURRENCY = ITEMS_REGISTRY.register(
             "dynamic_currency",
             () -> new Item(new Item.Properties().tab(CurrencyTab.instance).stacksTo(1))
+    );
+    public static final RegistryObject<Item> COIN_BAG = ITEMS_REGISTRY.register(
+            "coin_bag",
+            CoinBag::new
     );    public static final RegistryObject<Item> FIXED_CURRENCY = ITEMS_REGISTRY.register(
             "fixed_currency",
-            () -> new Item(new Item.Properties().tab(CurrencyTab.instance).stacksTo(64)) {
+            () -> new Item(new Item.Properties().tab(CurrencyTab.instance).stacksTo(64).fireResistant()) {
                 @Override
                 public boolean isFoil(@NotNull ItemStack pStack) {
                     return CurrencyHelper.isCurrencySpecial(pStack);
@@ -39,9 +44,13 @@ public class ItemInit {
             }
     );
 
-    public static final RegistryObject<Item> ANIMAL_VILLAGER_SPAWN_EGG  = ITEMS_REGISTRY.register(
-            "animal_villager_spawn_egg",
-            () -> new ForgeSpawnEggItem(EntityInit.ANIMAL_VILLAGER, 5651507, 12365937, new Item.Properties().tab(CreativeModeTab.TAB_MISC))
-    );
+    static {
+        ITEMS_REGISTRY.register(
+                "animal_villager_spawn_egg",
+                () -> new ForgeSpawnEggItem(EntityInit.ANIMAL_VILLAGER, 5651507, 12365937, new Item.Properties().tab(CreativeModeTab.TAB_MISC))
+        );
+    }
+
+
 
 }
