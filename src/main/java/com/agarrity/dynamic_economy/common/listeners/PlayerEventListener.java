@@ -1,20 +1,18 @@
 package com.agarrity.dynamic_economy.common.listeners;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
-import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
-import com.agarrity.dynamic_economy.common.economy.resources.WorldSavedData;
 import com.agarrity.dynamic_economy.common.economy.bank.Bank;
-import com.agarrity.dynamic_economy.common.network.ClientboundCurrencySizesMessage;
-import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
+import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
+import com.agarrity.dynamic_economy.common.economy.resources.WorldSavedData;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.player.PlayerDestroyItemEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.NetworkDirection;
 
-@Mod.EventBusSubscriber(modid= DynamicEconomy.MOD_ID, bus=Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = DynamicEconomy.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerEventListener {
 
     private static WorldSavedData SAVED_DATA;
@@ -39,6 +37,32 @@ public class PlayerEventListener {
                 Bank.createPlayerAccount(player.getUUID());
             }
         }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onPlayerEatFood(final PlayerInteractEvent event) {
+        final var player = event.getPlayer();
+        if (player.getLevel().isClientSide()) {
+            return;
+        }
+
+        final var hand = event.getHand();
+        final var itemInHand = player.getItemInHand(hand);
+
+        if (itemInHand.isEdible()) {
+            WorldResourceTracker.removeItemsFromEconomy(itemInHand, 1);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onPlayerBreakTool(final PlayerDestroyItemEvent event) {
+        final var player = event.getPlayer();
+        if (player.getLevel().isClientSide()) {
+            return;
+        }
+
+        final var item = event.getOriginal();
+        WorldResourceTracker.removeItemsFromEconomy(item, 1);
     }
 
 }
