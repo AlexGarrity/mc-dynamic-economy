@@ -185,6 +185,10 @@ public class WorldResourceTracker {
             return;
         }
 
+        if (stack.isEmpty()) {
+            return;
+        }
+
         final var itemName = stack.getItem().getRegistryName().toString();
 
         if (!SAVED_DATA.getItemsInWorld().containsKey(itemName)) {

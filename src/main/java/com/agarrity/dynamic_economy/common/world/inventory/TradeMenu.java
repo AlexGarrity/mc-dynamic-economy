@@ -2,6 +2,7 @@ package com.agarrity.dynamic_economy.common.world.inventory;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.DynamicEconomyConfig;
+import com.agarrity.dynamic_economy.common.economy.bag.CoinBagSavedData;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
@@ -320,6 +321,17 @@ public class TradeMenu extends AbstractContainerMenu {
         final var currencyRequired = new TreeMap<Long, Integer>();
         final var currencySlotIndices = new OrderedHashSet<Integer>();
 
+        final var coinBagSlot = findCoinBag();
+        final var coinBag = (coinBagSlot != -1) ? player.getInventory().items.get(coinBagSlot) : null;
+        ItemStackHandler coinBagInventory = null;
+        if (coinBag != null) {
+            final var coinBagTag = coinBag.getTag();
+            if (coinBagTag != null) {
+                final var coinBagUUID = coinBagTag.getUUID("uuid");
+                coinBagInventory = CoinBagSavedData.instance.getBag(coinBagUUID);
+            }
+        }
+
         for (var index = 0; index < player.getInventory().items.size(); ++index) {
             final var slot = player.getInventory().items.get(index);
             if (slot.getItem() == ItemInit.FIXED_CURRENCY.get()) {
@@ -334,6 +346,7 @@ public class TradeMenu extends AbstractContainerMenu {
             return false;
         }
 
+        // First, remove coins from the player's inventory
         for (final var currencyAmount : fixedMap.keySet()) {
             var currencyCount = fixedMap.get(currencyAmount);
             while (valueToMakeUp > 0 && currencyCount != 0) {
@@ -348,35 +361,86 @@ public class TradeMenu extends AbstractContainerMenu {
             }
         }
 
+        // First, try to remove coins from the player inventory
         for (final var slotIndex : currencySlotIndices) {
             final var slot = player.getInventory().items.get(slotIndex);
-            final var itemValue = CurrencyHelper.getCurrencyValue(slot).orElse(new CurrencyAmount()).asLong();
-            if (currencyRequired.containsKey(itemValue)) {
-                final var quantityOfCurrencyRequired = currencyRequired.get(itemValue);
-                if (slot.getCount() >= quantityOfCurrencyRequired) {
-                    slot.setCount(slot.getCount() - quantityOfCurrencyRequired);
-                    currencyRequired.remove(itemValue);
-                } else {
-                    currencyRequired.put(itemValue, quantityOfCurrencyRequired - slot.getCount());
-                    slot.setCount(0);
-                }
-            }
-            if (currencyRequired.isEmpty()) {
-                break;
+            if (tryToRemoveCurrencyFromSlot(currencyRequired, slot)) break;
+        }
+
+        // Then try to remove them from a coin bag, if it exists
+        if (coinBagInventory != null) {
+            for (var i = 0; i < coinBagInventory.getSlots(); ++i) {
+                final var slot = coinBagInventory.getStackInSlot(i);
+                if (tryToRemoveCurrencyFromSlot(currencyRequired, slot)) break;
             }
         }
 
-        if (valueToMakeUp < 0) {
-            final var currencyRefund = CurrencyHelper.calculateCurrencyRequired(new CurrencyAmount(-valueToMakeUp));
-            for (final var stack : currencyRefund) {
-                if (!player.getInventory().add(stack)) {
-                    player.drop(stack, false);
-                    DynamicEconomy.LOGGER.debug("Failed to insert a stack of {} into player inventory", stack);
+
+        if (valueToMakeUp >= 0) {
+            return true;
+        }
+
+        // The player is owed a refund
+        final var currencyRefund = CurrencyHelper.calculateCurrencyRequired(new CurrencyAmount(-valueToMakeUp));
+        for (final var stack : currencyRefund) {
+            final var valueOfCoinToRefund = CurrencyHelper.getCurrencyValue(stack);
+
+            // First, try to add it to the coin bag
+            if (coinBagInventory != null) {
+                for (var i = 0; i < coinBagInventory.getSlots(); ++i) {
+                    final var bagStack = coinBagInventory.getStackInSlot(i);
+                    final var optValue = CurrencyHelper.getCurrencyValue(bagStack);
+
+                    assert(optValue.isPresent());
+                    assert(valueOfCoinToRefund.isPresent());
+
+                    if (optValue.get().asLong() == valueOfCoinToRefund.get().asLong()) {
+                        final var countAvailableForPlacement = ItemInit.FIXED_CURRENCY.get().getItemStackLimit(bagStack) - bagStack.getCount();
+                        if (countAvailableForPlacement > 0) {
+                            bagStack.grow(countAvailableForPlacement);
+                            stack.shrink(countAvailableForPlacement);
+                        }
+                        if (stack.isEmpty()) {
+                            break;
+                        }
+                    }
                 }
+            }
+
+            // If it does not fit in the coin bag, put it in the player inventory
+            if (!player.getInventory().add(stack)) {
+                player.drop(stack, false);
+                DynamicEconomy.LOGGER.debug("Failed to insert a stack of {} into player inventory", stack);
             }
         }
 
         return true;
+    }
+
+    private boolean tryToRemoveCurrencyFromSlot(TreeMap<Long, Integer> currencyRequired, ItemStack slot) {
+        final var itemValue = CurrencyHelper.getCurrencyValue(slot).orElse(new CurrencyAmount()).asLong();
+        if (currencyRequired.containsKey(itemValue)) {
+            final var quantityOfCurrencyRequired = currencyRequired.get(itemValue);
+            if (slot.getCount() >= quantityOfCurrencyRequired) {
+                slot.setCount(slot.getCount() - quantityOfCurrencyRequired);
+                currencyRequired.remove(itemValue);
+            } else {
+                currencyRequired.put(itemValue, quantityOfCurrencyRequired - slot.getCount());
+                slot.setCount(0);
+            }
+        }
+        return currencyRequired.isEmpty();
+    }
+
+    private int findCoinBag() {
+        var slotIndex = 0;
+        for (final var slot : player.getInventory().items) {
+            if (slot.getItem() == ItemInit.COIN_BAG.get()) {
+                return slotIndex;
+            }
+            ++slotIndex;
+        }
+        return -1;
     }
 
     public CurrencyAmount calculateInventoryCoinValue() {
@@ -384,7 +448,25 @@ public class TradeMenu extends AbstractContainerMenu {
         for (final var slot : player.getInventory().items) {
             if (slot.getItem() == ItemInit.FIXED_CURRENCY.get()) {
                 total += CurrencyHelper.getStackValue(slot).orElse(new CurrencyAmount()).asLong();
+            } else if (slot.getItem() == ItemInit.COIN_BAG.get()) {
+                final var nbtTag = slot.getOrCreateTag();
+                final var uuid = nbtTag.getUUID("uuid");
+                final var bagInventory = CoinBagSavedData.instance.getBag(uuid);
+                total += getValueOfBagContents(bagInventory).asLong();
             }
+        }
+
+        return new CurrencyAmount(total);
+    }
+
+    public CurrencyAmount getValueOfBagContents(ItemStackHandler bagInventory) {
+        long total = 0;
+        for (var i = 0; i < bagInventory.getSlots(); ++i) {
+            final var optValue = CurrencyHelper.getCurrencyValue(bagInventory.getStackInSlot(i));
+            if (optValue.isEmpty()) {
+                continue;
+            }
+            total += optValue.get().asLong();
         }
 
         return new CurrencyAmount(total);

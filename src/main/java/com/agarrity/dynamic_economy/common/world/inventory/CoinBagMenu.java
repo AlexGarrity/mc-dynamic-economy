@@ -1,7 +1,5 @@
 package com.agarrity.dynamic_economy.common.world.inventory;
 
-import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
-import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.init.ItemInit;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -47,18 +45,5 @@ public class CoinBagMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(@NotNull Player pPlayer) {
         return true;
-    }
-
-    public CurrencyAmount getValueOfBagContents() {
-        long total = 0;
-        for (var i = 0; i < 27; ++i) {
-            final var optValue = CurrencyHelper.getCurrencyValue(this.slots.get(i).getItem());
-            if (optValue.isEmpty()) {
-                continue;
-            }
-            total += optValue.get().asLong();
-        }
-
-        return new CurrencyAmount(total);
     }
 }
