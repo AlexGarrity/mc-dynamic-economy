@@ -43,6 +43,26 @@ public class Bank {
     }
 
     /**
+     * Add currency to an account with a given UUID, provided that it exists
+     *
+     * @param accountUUID   The account UUID to add the currency to
+     * @param quantity The amount of currency to add
+     */
+    public static void addCurrencyToAccount(@NotNull final UUID accountUUID, @NotNull final CurrencyAmount quantity) {
+        if (quantity.isZero()) {
+            return;
+        }
+
+        final var optAccount = SAVED_DATA.getAccount(accountUUID);
+        optAccount.ifPresent(
+                (Account account) -> {
+                    account.addBalance(quantity);
+                    SAVED_DATA.setDirty();
+                }
+        );
+    }
+
+    /**
      * Add currency to a player's account, provided that it exists
      *
      * @param player   The account number to add the currency to

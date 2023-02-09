@@ -122,7 +122,15 @@ public class WorldEventListener {
     // Make animal villagers spawn in all biomes in groups of up to 4
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRegisterBiomes(final BiomeLoadingEvent event) {
-        event.getSpawns().addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityInit.ANIMAL_VILLAGER.get(), 6, 1, 4));
+        DynamicEconomy.LOGGER.debug("Biome loading event");
+        final var builder = event.getSpawns();
+        switch (event.getCategory()) {
+            case PLAINS, FOREST, SAVANNA -> {
+                final var biomeName = event.getName();
+                DynamicEconomy.LOGGER.debug("Adding animal villager spawning to biome \"{}\"", (biomeName != null) ? event.getName().toString() : "UNKNOWN");
+                builder.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityInit.ANIMAL_VILLAGER.get(), 6, 1, 4));
+            }
+        }
     }
 
     @SubscribeEvent

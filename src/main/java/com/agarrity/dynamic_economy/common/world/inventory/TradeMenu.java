@@ -1,8 +1,8 @@
 package com.agarrity.dynamic_economy.common.world.inventory;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
-import com.agarrity.dynamic_economy.DynamicEconomyConfig;
 import com.agarrity.dynamic_economy.common.economy.bag.CoinBagSavedData;
+import com.agarrity.dynamic_economy.common.economy.bank.Bank;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
@@ -20,7 +20,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.network.NetworkDirection;
@@ -29,41 +28,46 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.TreeMap;
+import java.util.UUID;
 
 public class TradeMenu extends AbstractContainerMenu {
 
     private final Player player;
     private final ITrader traderVillager;
-    private final IItemHandler traderInventory;
+    private final TraderItemStackHandler traderItemStackHandler;
 
     public TradeMenu(final int containerId, final Inventory playerInventory) {
-        this(containerId, playerInventory, new ItemStackHandler(AnimalVillager.INVENTORY_SIZE), new ClientSideTrader(playerInventory.player));
+        this(containerId, playerInventory, new TraderItemStackHandler(AnimalVillager.INVENTORY_SIZE), new ClientSideTrader(playerInventory.player));
     }
 
-    public TradeMenu(final int containerId, final Inventory playerInventory, final IItemHandler traderInventory, final ITrader trader) {
+    public TradeMenu(final int containerId, final Inventory playerInventory, final TraderItemStackHandler traderItemStackHandler, final ITrader trader) {
         super(MenuInit.TRADER_MENU.get(), containerId);
         this.traderVillager = trader;
         this.player = playerInventory.player;
-        this.traderInventory = traderInventory;
+        this.traderItemStackHandler = traderItemStackHandler;
 
+        // Stores all the items that are going to need to have their values sent to the player
         final var playerInventoryItems = new HashSet<Item>();
 
+        // Add trader inventory items
         for (var y = 0; y < 3; ++y) {
             for (var x = 0; x < 4; ++x) {
                 if (this.traderVillager.isClientSide()) {
-                    addSlot(new SlotItemHandler(traderInventory, x + (y * 4), 90 + (x * 21), 7 + (y * 21)));
+                    addSlot(new SlotItemHandler(traderItemStackHandler, x + (y * 4), 90 + (x * 21), 7 + (y * 21)));
                 } else {
-                    addSlot(new SlotItemHandler(traderInventory, x + (y * 4), 90 + (x * 21), 7 + (y * 21)) {
+                    addSlot(new SlotItemHandler(traderItemStackHandler, x + (y * 4), 90 + (x * 21), 7 + (y * 21)) {
                         @Override
                         public @NotNull ItemStack remove(int amount) {
-                            playerBuyItemFromTrader(this.getItem(), amount);
+                            final int slotIndex = x + (y * 4);
+                            playerBuyItemFromTrader(this.getItem(), amount, traderItemStackHandler.getSellerOfSlot(slotIndex));
                             return super.remove(amount);
                         }
 
                         @Override
                         public void set(@NotNull ItemStack stack) {
                             super.set(stack);
-                            playerSellItemToTrader(stack, stack.getCount());
+                            final int slotIndex = x + (y * 4);
+                            traderItemStackHandler.setSellerOfSlot(slotIndex, player.getUUID());
                         }
 
                         @Override
@@ -81,20 +85,23 @@ public class TradeMenu extends AbstractContainerMenu {
 
                         @Override
                         public boolean mayPickup(Player playerIn) {
-                            return playerCanAffordItem(this.getItem(), this.getItem().getCount());
+                            final int slotIndex = x + (y * 4);
+                            final var sellerUUID = traderItemStackHandler.getSellerOfSlot(slotIndex);
+                            return playerCanAffordItem(this.getItem(), this.getItem().getCount()) || player.getUUID() == sellerUUID;
                         }
                     });
 
-                    final var itemStack = this.traderInventory.getStackInSlot(x + (y * 4));
+                    final var itemStack = this.traderItemStackHandler.getStackInSlot(x + (y * 4));
                     if (itemStack == ItemStack.EMPTY) {
                         continue;
                     }
 
-                    playerInventoryItems.add(this.traderInventory.getStackInSlot(x + (y * 4)).getItem());
+                    playerInventoryItems.add(this.traderItemStackHandler.getStackInSlot(x + (y * 4)).getItem());
                 }
             }
         }
 
+        // Add player inventory items
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 9; ++j) {
                 this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
@@ -112,6 +119,7 @@ public class TradeMenu extends AbstractContainerMenu {
             }
         }
 
+        // Add hotbar items
         for (int k = 0; k < 9; ++k) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
 
@@ -127,33 +135,44 @@ public class TradeMenu extends AbstractContainerMenu {
             playerInventoryItems.add(playerInventory.getItem(k).getItem());
         }
 
+        // Send the value of all items in the player and trader inventory to the player
         for (final var item : playerInventoryItems) {
             final var optValue = WorldResourceTracker.estimateItemsValue(new ItemStack(item));
             final var optRarity = WorldResourceTracker.getItemFrequency(new ItemStack(item));
-            DynamicEconomyPacketHandler.INSTANCE.sendTo(
-                    new ClientboundItemValueMessage(
-                            item,
-                            optValue.orElse(null),
-                            optRarity.orElse(-1)
-                    ),
-                    ((ServerPlayer) player).connection.getConnection(),
-                    NetworkDirection.PLAY_TO_CLIENT
-            );
+            DynamicEconomyPacketHandler.INSTANCE.sendTo(new ClientboundItemValueMessage(item, optValue.orElse(null), optRarity.orElse(-1)), ((ServerPlayer) player).connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
         }
     }
 
 
+    /**
+     * Determines whether supplied player can use this container
+     *
+     * @param pPlayer The player using the container
+     * @return True if the menu is valid, false otherwise
+     */
     @Override
     public boolean stillValid(@NotNull final Player pPlayer) {
         return true;
     }
 
+    /**
+     * Called when the container is closed
+     *
+     * @param pPlayer The player that closed the menu
+     */
     @Override
     public void removed(@NotNull final Player pPlayer) {
         super.removed(pPlayer);
         this.traderVillager.setTradingPlayer(null);
     }
 
+    /**
+     * Shift-click move a stack
+     *
+     * @param pPlayer The player moving the slot
+     * @param pIndex  The index of the slot the player shift-clicked
+     * @return The remaining stack after attempting to move it
+     */
     @Override
     public @NotNull ItemStack quickMoveStack(@NotNull final Player pPlayer, final int pIndex) {
         var itemStack = ItemStack.EMPTY;
@@ -161,11 +180,14 @@ public class TradeMenu extends AbstractContainerMenu {
         if (slot.hasItem()) {
             final var itemStack1 = slot.getItem();
             itemStack = itemStack1.copy();
-            if (pIndex < this.traderInventory.getSlots()) {
-                if (this.commerceMoveItemStackTo(itemStack1, this.traderInventory.getSlots(), this.slots.size(), TransactionDirection.BuyFromTrader)) {
+            // Item is being quick moved from the trader inventory
+            if (pIndex < this.traderItemStackHandler.getSlots()) {
+                final var sellerUUID = traderItemStackHandler.getSellerOfSlot(pIndex);
+                if (this.commerceMoveItemStackTo(itemStack1, this.traderItemStackHandler.getSlots(), this.slots.size(), TransactionDirection.BuyFromTrader, sellerUUID)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (this.commerceMoveItemStackTo(itemStack1, 0, this.traderInventory.getSlots(), TransactionDirection.SellToTrader)) {
+                // Item is being quick moved from the player inventory
+            } else if (this.commerceMoveItemStackTo(itemStack1, 0, this.traderItemStackHandler.getSlots(), TransactionDirection.SellToTrader, pPlayer.getUUID())) {
                 return ItemStack.EMPTY;
             }
 
@@ -179,12 +201,24 @@ public class TradeMenu extends AbstractContainerMenu {
         return itemStack;
     }
 
-    protected boolean commerceMoveItemStackTo(@NotNull final ItemStack newStack, final int pStartIndex, final int pEndIndex, final TransactionDirection transactionDirection) {
+    /**
+     * Move an ItemStack between the player and trader inventory, checking whether they can be afforded / sold as required
+     *
+     * @param newStack             The stack to move
+     * @param firstSlotIndex       The index of the first slot in the inventory
+     * @param finalSlotIndex       The index of the last slot in the inventory
+     * @param transactionDirection The direction of the transaction
+     * @param seller               The UUID of the seller of the items in the slot
+     * @return True if the ItemStack could be moved, false otherwise
+     */
+    protected boolean commerceMoveItemStackTo(@NotNull final ItemStack newStack, final int firstSlotIndex, final int finalSlotIndex, final TransactionDirection transactionDirection, UUID seller) {
         boolean flag = false;
-        int i = pStartIndex;
+        int i = firstSlotIndex;
+
+        // Item can be stacked
         if (newStack.isStackable()) {
             while (!newStack.isEmpty()) {
-                if (i >= pEndIndex) {
+                if (i >= finalSlotIndex) {
                     break;
                 }
 
@@ -195,10 +229,8 @@ public class TradeMenu extends AbstractContainerMenu {
                     int maxSize = Math.min(slot.getMaxStackSize(), newStack.getMaxStackSize());
                     if (countWhenStackIsAddedToExistingStack <= maxSize) {
                         if (!this.traderVillager.isClientSide()) {
-                            if (transactionDirection == TransactionDirection.SellToTrader) {
-                                playerSellItemToTrader(newStack, newStack.getCount());
-                            } else {
-                                playerBuyItemFromTrader(newStack, newStack.getCount());
+                            if (transactionDirection == TransactionDirection.BuyFromTrader) {
+                                playerBuyItemFromTrader(newStack, newStack.getCount(), seller);
                             }
                         }
                         newStack.setCount(0);
@@ -208,10 +240,8 @@ public class TradeMenu extends AbstractContainerMenu {
                     } else if (existingStack.getCount() < maxSize) {
                         final var quantityOfItemSold = maxSize - existingStack.getCount();
                         if (!this.traderVillager.isClientSide()) {
-                            if (transactionDirection == TransactionDirection.SellToTrader) {
-                                playerSellItemToTrader(newStack, quantityOfItemSold);
-                            } else {
-                                playerBuyItemFromTrader(newStack, quantityOfItemSold);
+                            if (transactionDirection == TransactionDirection.BuyFromTrader) {
+                                playerBuyItemFromTrader(newStack, quantityOfItemSold, seller);
                             }
                         }
                         newStack.shrink(quantityOfItemSold);
@@ -225,11 +255,12 @@ public class TradeMenu extends AbstractContainerMenu {
             }
         }
 
+        // Item cannot be stacked, and isn't empty
         if (!newStack.isEmpty()) {
-            i = pStartIndex;
+            i = firstSlotIndex;
 
             while (true) {
-                if (i >= pEndIndex) {
+                if (i >= finalSlotIndex) {
                     break;
                 }
 
@@ -254,6 +285,13 @@ public class TradeMenu extends AbstractContainerMenu {
         return !flag;
     }
 
+    /**
+     * Check if a player can afford to buy an item from the trader
+     *
+     * @param stack The stack of items to purchase
+     * @param count The number of items to purchase
+     * @return True if the player can afford x items
+     */
     public boolean playerCanAffordItem(final ItemStack stack, final int count) {
         final var newStack = new ItemStack(stack.getItem(), count);
         final var optValue = WorldResourceTracker.estimateItemsValue(newStack);
@@ -267,18 +305,27 @@ public class TradeMenu extends AbstractContainerMenu {
         return inventoryValue.isGreaterThan(value) || inventoryValue.isEqualTo(value);
     }
 
+    /**
+     * Check whether a player can sell an item
+     *
+     * @param stack The stack of items to sell
+     * @param count The number of items to sell
+     * @return True if the item can be sold, false otherwise
+     */
     public boolean playerCanSellItem(final ItemStack stack, final int count) {
         final var newStack = new ItemStack(stack.getItem(), count);
         final var optValue = WorldResourceTracker.estimateItemsValue(newStack);
-        if (optValue.isEmpty()) {
-            return false;
-        }
-        final var value = optValue.get();
-
-        return value.asLong() <= DynamicEconomyConfig.TRADER_MAX_BUY_PRICE.get();
+        return optValue.isPresent();
     }
 
-    public void playerBuyItemFromTrader(final ItemStack stack, final int count) {
+    /**
+     * Remove an amount of currency from the active player in exchange for an item stack, and gives the currency to the seller's account
+     *
+     * @param stack  The stack of items the player is buying
+     * @param count  The number of items the player is buying
+     * @param seller The seller of the items
+     */
+    public void playerBuyItemFromTrader(final ItemStack stack, final int count, UUID seller) {
         final var newStack = new ItemStack(stack.getItem(), count);
         final var optValue = WorldResourceTracker.estimateItemsValue(newStack);
         if (optValue.isEmpty()) {
@@ -289,30 +336,16 @@ public class TradeMenu extends AbstractContainerMenu {
             return;
         }
 
-        DynamicEconomy.LOGGER.debug("{} bought {} for {}", player.getDisplayName().getString(), stack, optValue.get());
+        Bank.addCurrencyToAccount(seller, optValue.get());
+        DynamicEconomy.LOGGER.debug("{} bought {} for {} from {}", player.getDisplayName().getString(), stack, optValue.get(), seller);
     }
 
-    public void playerSellItemToTrader(final ItemStack stack, final int count) {
-        if (traderVillager.isClientSide()) {
-            return;
-        }
-
-        final var newStack = new ItemStack(stack.getItem(), count);
-        final var optValue = WorldResourceTracker.estimateItemsValue(newStack);
-        if (optValue.isEmpty()) {
-            return;
-        }
-
-        final var changeRequired = CurrencyHelper.calculateCurrencyRequired(optValue.get());
-        for (final var currencyItem : changeRequired) {
-            if (!player.addItem(currencyItem)) {
-                player.drop(currencyItem, false);
-            }
-        }
-
-        DynamicEconomy.LOGGER.debug("{} sold {} for {}", player.getDisplayName().getString(), stack, optValue.get());
-    }
-
+    /**
+     * Remove an amount of currency from the current player's inventory, and gives them a refund if they don't have correct change
+     *
+     * @param amount The amount of currency to remove
+     * @return True if the currency could be removed, false otherwise
+     */
     public boolean removeCurrencyFromPlayerInventory(final CurrencyAmount amount) {
         var valueToMakeUp = amount.asLong();
         var totalValue = 0;
@@ -391,8 +424,8 @@ public class TradeMenu extends AbstractContainerMenu {
                     final var bagStack = coinBagInventory.getStackInSlot(i);
                     final var optValue = CurrencyHelper.getCurrencyValue(bagStack);
 
-                    assert(optValue.isPresent());
-                    assert(valueOfCoinToRefund.isPresent());
+                    assert (optValue.isPresent());
+                    assert (valueOfCoinToRefund.isPresent());
 
                     if (optValue.get().asLong() == valueOfCoinToRefund.get().asLong()) {
                         final var countAvailableForPlacement = ItemInit.FIXED_CURRENCY.get().getItemStackLimit(bagStack) - bagStack.getCount();
@@ -417,6 +450,13 @@ public class TradeMenu extends AbstractContainerMenu {
         return true;
     }
 
+    /**
+     * Try to remove an amount of currency from a slot
+     *
+     * @param currencyRequired A map containing the number of each type of currency required
+     * @param slot             The slot to remove currency from
+     * @return True if no more currency is required, false otherwise
+     */
     private boolean tryToRemoveCurrencyFromSlot(TreeMap<Long, Integer> currencyRequired, ItemStack slot) {
         final var itemValue = CurrencyHelper.getCurrencyValue(slot).orElse(new CurrencyAmount()).asLong();
         if (currencyRequired.containsKey(itemValue)) {
@@ -432,6 +472,11 @@ public class TradeMenu extends AbstractContainerMenu {
         return currencyRequired.isEmpty();
     }
 
+    /**
+     * Find the slot that the player has a coin bag in
+     *
+     * @return An integer index representing the slot the player has their coin bag in
+     */
     private int findCoinBag() {
         var slotIndex = 0;
         for (final var slot : player.getInventory().items) {
@@ -443,6 +488,11 @@ public class TradeMenu extends AbstractContainerMenu {
         return -1;
     }
 
+    /**
+     * Calculate the value of a player's inventory, including coins in coin bags
+     *
+     * @return A CurrencyAmount containing the value of the currency in the inventory
+     */
     public CurrencyAmount calculateInventoryCoinValue() {
         long total = 0;
         for (final var slot : player.getInventory().items) {
@@ -459,6 +509,12 @@ public class TradeMenu extends AbstractContainerMenu {
         return new CurrencyAmount(total);
     }
 
+    /**
+     * Get the value of all of the coins in a coin bag's inventory
+     *
+     * @param bagInventory The inventory to check
+     * @return A CurrencyAmount containing the value of the currency in the inventory
+     */
     public CurrencyAmount getValueOfBagContents(ItemStackHandler bagInventory) {
         long total = 0;
         for (var i = 0; i < bagInventory.getSlots(); ++i) {
@@ -473,7 +529,6 @@ public class TradeMenu extends AbstractContainerMenu {
     }
 
     private enum TransactionDirection {
-        SellToTrader,
-        BuyFromTrader,
+        SellToTrader, BuyFromTrader,
     }
 }
