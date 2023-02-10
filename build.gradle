@@ -109,6 +109,8 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    testImplementation('junit:junit:4.13.2')
 }
 
 jar {

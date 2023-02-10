@@ -4,11 +4,11 @@ import net.minecraft.network.chat.TranslatableComponent;
 import org.jetbrains.annotations.NotNull;
 
 public class CurrencyAmount {
-    private int whole;
-    private int decimal;
-
     private static final TranslatableComponent CURRENCY_SYMBOL_MAJOR = new TranslatableComponent("gui.dynamic_economy.symbol.currency_major");
     private static final TranslatableComponent CURRENCY_SYMBOL_MINOR = new TranslatableComponent("gui.dynamic_economy.symbol.currency_minor");
+    public static CurrencyAmount ZERO = new CurrencyAmount(0);
+    private int whole;
+    private int decimal;
 
     /**
      * Construct a new CurrencyAmount with a value of 0.0
@@ -50,7 +50,7 @@ public class CurrencyAmount {
      * @param decimal The decimal component of the amount
      */
     public CurrencyAmount(int whole, int decimal) {
-        final var decimalOverflow = (decimal > 100)? decimal / 100 : 0;
+        final var decimalOverflow = (decimal > 100) ? decimal / 100 : 0;
         this.whole = Math.max(whole + decimalOverflow, 0);
         this.decimal = Math.max(decimal % 100, 0);
 
@@ -64,6 +64,10 @@ public class CurrencyAmount {
     public void add(@NotNull CurrencyAmount quantity) {
         whole += quantity.getWhole();
         decimal += quantity.getDecimal();
+        if (decimal >= 100) {
+            whole += decimal / 100;
+            decimal %= 100;
+        }
     }
 
     /**
@@ -72,8 +76,13 @@ public class CurrencyAmount {
      * @param quantity The CurrencyAmount to subtract
      */
     public void subtract(@NotNull CurrencyAmount quantity) {
+        decimal = decimal - quantity.getDecimal();
+        if (decimal < 0) {
+            whole -= ((decimal / 100) + 1);
+            decimal += 100;
+        }
+
         whole = Math.max(whole - quantity.getWhole(), 0);
-        decimal = Math.max(decimal - quantity.getDecimal(), 0);
     }
 
     /**
@@ -84,43 +93,10 @@ public class CurrencyAmount {
     }
 
     /**
-     * Set the whole component of the CurrencyAmount, provided that the given value is greater than zero
-     *
-     * @param value The value to set the whole component to
-     */
-    public void setWhole(int value) {
-        if (value < 0) {
-            return;
-        }
-
-        whole = value;
-    }
-
-    /**
      * Get the decimal component of the CurrencyAmount
      */
     public int getDecimal() {
         return decimal;
-    }
-
-    /**
-     * Set the decimal component of the CurrencyAmount, profivided that the given value is greater than zero.
-     * If the value is greater than 100, the overflow is automatically added to the whole component.
-     *
-     * @param value The value to add to the decimal component
-     */
-    public void setDecimal(int value) {
-        if (decimal < 0) {
-            return;
-        }
-
-        if (decimal > 100) {
-            decimal = value;
-        } else {
-            final var overflow = value / 100;
-            decimal = value % 100;
-            whole += overflow;
-        }
     }
 
     /**
@@ -175,11 +151,12 @@ public class CurrencyAmount {
      * @return true if this represents 0.0, false otherwise
      */
     public boolean isZero() {
-        return (whole == 0) && (decimal == 0);
+        return this.equals(CurrencyAmount.ZERO);
     }
 
     /**
      * Get the currency amount in long format (ie. 12.34 becomes 1234)
+     *
      * @return A long representing the amount
      */
     public long asLong() {
@@ -188,6 +165,7 @@ public class CurrencyAmount {
 
     /**
      * Print the currency amount in standard currency format
+     *
      * @return A string representing the amount
      */
     @Override
@@ -206,5 +184,13 @@ public class CurrencyAmount {
                 return String.format("%s%d.%02d", CURRENCY_SYMBOL_MAJOR.getString(), whole, decimal);
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass()) {
+            return false;
+        }
+        return isEqualTo((CurrencyAmount) obj);
     }
 }
