@@ -12,6 +12,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
@@ -125,14 +126,15 @@ public class InventoryEventListener {
                     continue;
                 }
 
+                Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(id));
+                if (item == null) {
+                    return;
+                }
+
                 if (isPickUp) {
-                    WorldResourceTracker.addItemsToEconomy(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                            new ResourceLocation(id)
-                    )), count);
+                    WorldResourceTracker.addItemsToEconomy(item, count);
                 } else {
-                    WorldResourceTracker.removeItemsFromEconomy(new ItemStack(ForgeRegistries.ITEMS.getValue(
-                            new ResourceLocation(id)
-                    )), count);
+                    WorldResourceTracker.removeItemsFromEconomy(item, count);
                 }
             }
         }
@@ -155,7 +157,7 @@ public class InventoryEventListener {
         final var containerSize = matrix.getContainerSize();
         for (var slotIndex = 0; slotIndex < containerSize; ++slotIndex) {
             final var itemStack = matrix.getItem(slotIndex);
-            WorldResourceTracker.removeItemsFromEconomy(itemStack, 1);
+            WorldResourceTracker.removeItemsFromEconomy(itemStack.getItem(), 1);
         }
 
         DynamicEconomy.LOGGER.debug("Crafted items event");
@@ -226,8 +228,7 @@ public class InventoryEventListener {
                 event.getToolTip().add(textMultiple);
             }
 
-        }
-        else {
+        } else {
             if (item.getRegistryName() == null) {
                 return;
             }

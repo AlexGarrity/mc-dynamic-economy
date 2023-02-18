@@ -50,7 +50,7 @@ public class PlayerEventListener {
         final var itemInHand = player.getItemInHand(hand);
 
         if (itemInHand.isEdible()) {
-            WorldResourceTracker.removeItemsFromEconomy(itemInHand, 1);
+            WorldResourceTracker.removeItemsFromEconomy(itemInHand.getItem(), 1);
         }
     }
 
@@ -62,7 +62,7 @@ public class PlayerEventListener {
         }
 
         final var item = event.getOriginal();
-        WorldResourceTracker.removeItemsFromEconomy(item, 1);
+        WorldResourceTracker.removeItemsFromEconomy(item.getItem(), 1);
     }
 
 }

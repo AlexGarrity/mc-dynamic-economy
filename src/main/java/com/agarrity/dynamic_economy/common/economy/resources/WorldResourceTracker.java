@@ -3,6 +3,7 @@ package com.agarrity.dynamic_economy.common.economy.resources;
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -41,6 +42,10 @@ public class WorldResourceTracker {
      * @return true if the block was added, false otherwise
      */
     private static boolean addBlockToWorldUnlogged(@NotNull final Block block) {
+        if (SAVED_DATA == null) {
+            return false;
+        }
+
         if (block.getRegistryName() == null) {
             return false;
         }
@@ -81,6 +86,10 @@ public class WorldResourceTracker {
      * @return true if the block was removed, false otherwise
      */
     private static boolean removeBlockFromWorldUnlogged(@NotNull final Block block) {
+        if (SAVED_DATA == null) {
+            return false;
+        }
+
         if (block.getRegistryName() == null) {
             return false;
         }
@@ -128,6 +137,10 @@ public class WorldResourceTracker {
      * @param chunk The chunk to add
      */
     public static void addChunkToWorld(final ChunkAccess chunk) {
+        if (SAVED_DATA == null) {
+            return;
+        }
+
         for (var z = 0; z < 16; ++z) {
             for (var x = 0; x < 16; ++x) {
                 for (var y = -64; y < 256; ++y) {
@@ -145,21 +158,29 @@ public class WorldResourceTracker {
      * @param stack The item to add
      */
     public static void addItemsToEconomy(@NotNull final ItemStack stack) {
-        addItemsToEconomy(stack, stack.getCount());
+        addItemsToEconomy(stack.getItem(), stack.getCount());
     }
 
     /**
      * Add a stack of items to the resource tracker's economy
      *
-     * @param stack The stack of items to add
+     * @param item  The stack of items to add
      * @param count The number of items to add
      */
-    public static void addItemsToEconomy(@NotNull final ItemStack stack, int count) {
-        if (stack.getItem().getRegistryName() == null) {
+    public static void addItemsToEconomy(final Item item, int count) {
+        if (SAVED_DATA == null) {
             return;
         }
 
-        final var itemName = stack.getItem().getRegistryName().toString();
+        if (item.getRegistryName() == null) {
+            return;
+        }
+
+        if (item == ItemStack.EMPTY.getItem()) {
+            return;
+        }
+
+        final var itemName = item.getRegistryName().toString();
         if (SAVED_DATA.getItemsInWorld().containsKey(itemName)) {
             final var existingCount = SAVED_DATA.getItemsInWorld().get(itemName);
             SAVED_DATA.getItemsInWorld().put(itemName, existingCount + count);
@@ -168,7 +189,7 @@ public class WorldResourceTracker {
         }
 
 
-        DynamicEconomy.LOGGER.debug("ADDED {} of '{}' TO THE ECONOMY", stack.getCount(), itemName);
+        DynamicEconomy.LOGGER.debug("ADDED {} of '{}' TO THE ECONOMY", count, itemName);
         SAVED_DATA.setDirty();
     }
 
@@ -178,28 +199,32 @@ public class WorldResourceTracker {
      * @param stack The item to remove
      */
     public static void removeItemsFromEconomy(@NotNull final ItemStack stack) {
-        removeItemsFromEconomy(stack, stack.getCount());
+        removeItemsFromEconomy(stack.getItem(), stack.getCount());
     }
 
     /**
      * Remove a stack of items from the resource tracker's economy
      *
-     * @param stack The stack of items to remove
+     * @param item  The stack of items to remove
      * @param count The number of items to remove
      */
-    public static void removeItemsFromEconomy(@NotNull final ItemStack stack, final int count) {
-        if (stack.getItem().getRegistryName() == null) {
+    public static void removeItemsFromEconomy(final @NotNull Item item, final int count) {
+        if (SAVED_DATA == null) {
             return;
         }
 
-        if (stack.isEmpty()) {
+        if (item.getRegistryName() == null) {
             return;
         }
 
-        final var itemName = stack.getItem().getRegistryName().toString();
+        if (item == ItemStack.EMPTY.getItem()) {
+            return;
+        }
+
+        final var itemName = item.getRegistryName().toString();
 
         if (!SAVED_DATA.getItemsInWorld().containsKey(itemName)) {
-            DynamicEconomy.LOGGER.debug("Tried to remove {} from the economy, but there is none to remove", stack);
+            DynamicEconomy.LOGGER.debug("Tried to remove {} from the economy, but there is none to remove", item);
             return;
         }
 
@@ -263,6 +288,10 @@ public class WorldResourceTracker {
     }
 
     private static Optional<ItemCounts> getItemCounts(@NotNull final ItemStack stack) {
+        if (SAVED_DATA == null) {
+            return Optional.empty();
+        }
+
         if (stack.getItem().getRegistryName() == null) {
             return Optional.empty();
         }
@@ -287,6 +316,10 @@ public class WorldResourceTracker {
      * @return An empty optional if none of the item legitimately exist in the economy, otherwise the frequency
      */
     public static Optional<Integer> getItemFrequency(@NotNull final ItemStack stack) {
+        if (SAVED_DATA == null) {
+            return Optional.empty();
+        }
+
         if (stack.getItem().getRegistryName() == null) {
             return Optional.empty();
         }

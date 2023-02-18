@@ -25,7 +25,7 @@ public abstract class MixinAbstractArrow {
         }
 
         if (this.pickup == AbstractArrow.Pickup.ALLOWED && cir.getReturnValue()) {
-            WorldResourceTracker.addItemsToEconomy(this.getPickupItem(), 1);
+            WorldResourceTracker.addItemsToEconomy(this.getPickupItem().getItem(), 1);
         }
     }
 
