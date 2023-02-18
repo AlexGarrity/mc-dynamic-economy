@@ -59,20 +59,18 @@ public class PlayerTradeMenu extends AbstractContainerMenu {
                     addSlot(new TraderSlotItemHandler(traderItemStackHandler, x + (y * 4), 90 + (x * 21), 7 + (y * 21)) {
                         @Override
                         public @NotNull ItemStack remove(int amount) {
-                            playerBuyItemFromTrader(this.getItem(), amount, traderItemStackHandler.getSellerOfSlot(this.getSlotIndex()));
+                            playerBuyItemFromTrader(this.getItem(), amount, this.getSlotIndex(), traderItemStackHandler.getSellerOfSlot(this.getSlotIndex()));
                             return super.remove(amount);
                         }
 
                         @Override
                         public void set(@NotNull ItemStack stack) {
-                            playerSellItemToTrader(stack, stack.getCount(), this.getSlotIndex(), player.getUUID());
                             super.set(stack);
+                            playerSellItemToTrader(stack, stack.getCount(), this.getSlotIndex(), player.getUUID());
                         }
 
                         @Override
                         public boolean mayPlace(@NotNull final ItemStack pStack) {
-                            return false;
-                            /*
                             if (CurrencyHelper.getCurrencyValue(pStack).isPresent()) {
                                 return false;
                             }
@@ -82,13 +80,15 @@ public class PlayerTradeMenu extends AbstractContainerMenu {
                             }
 
                             return playerCanSellItem(pStack, pStack.getCount());
-                            */
                         }
 
                         @Override
                         public boolean mayPickup(Player playerIn) {
                             final var sellerUUID = traderItemStackHandler.getSellerOfSlot(this.getSlotIndex());
-                            return playerCanAffordItem(this.getItem(), this.getItem().getCount()) || player.getUUID() == sellerUUID;
+                            final var canAfford = playerCanAffordItem(this.getItem(), this.getItem().getCount());
+                            final var playerUUID = player.getUUID();
+                            final var isSeller = playerUUID.equals(sellerUUID);
+                            return canAfford || isSeller;
                         }
                     });
 
@@ -232,7 +232,7 @@ public class PlayerTradeMenu extends AbstractContainerMenu {
                     if (countWhenStackIsAddedToExistingStack <= maxSize) {
                         if (!this.traderVillager.isClientSide()) {
                             if (transactionDirection == TransactionDirection.BuyFromTrader) {
-                                playerBuyItemFromTrader(newStack, newStack.getCount(), seller);
+                                playerBuyItemFromTrader(newStack, newStack.getCount(), i, seller);
                             }
                         }
                         newStack.setCount(0);
@@ -243,7 +243,7 @@ public class PlayerTradeMenu extends AbstractContainerMenu {
                         final var quantityOfItemSold = maxSize - existingStack.getCount();
                         if (!this.traderVillager.isClientSide()) {
                             if (transactionDirection == TransactionDirection.BuyFromTrader) {
-                                playerBuyItemFromTrader(newStack, quantityOfItemSold, seller);
+                                playerBuyItemFromTrader(newStack, quantityOfItemSold, i, seller);
                             }
                         }
                         newStack.shrink(quantityOfItemSold);
@@ -320,7 +320,12 @@ public class PlayerTradeMenu extends AbstractContainerMenu {
      * @param count  The number of items the player is buying
      * @param seller The seller of the items
      */
-    public void playerBuyItemFromTrader(final ItemStack stack, final int count, UUID seller) {
+    public void playerBuyItemFromTrader(final ItemStack stack, final int count, final int slotIndex, UUID seller) {
+        if (player.getUUID().equals(seller)) {
+            DynamicEconomy.LOGGER.debug("{} took their {} back", seller, stack);
+            return;
+        }
+
         final var newStack = new ItemStack(stack.getItem(), count);
         final var optValue = WorldResourceTracker.estimateItemsValue(newStack);
         if (optValue.isEmpty()) {
@@ -332,12 +337,17 @@ public class PlayerTradeMenu extends AbstractContainerMenu {
         }
         DynamicEconomy.LOGGER.debug("{} bought {} for {} from {}", player.getDisplayName().getString(), stack, optValue.get(), seller);
 
+        this.traderItemStackHandler.setSellerOfSlot(slotIndex, null);
+
         final var balance = Bank.getAccountBalance(player.getUUID());
         balance.ifPresent(amount -> DynamicEconomyPacketHandler.INSTANCE.sendTo(new ClientboundBalanceMessage(amount), ((ServerPlayer) player).connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public void playerSellItemToTrader(final ItemStack stack, final int count, final int slotIndex, UUID seller) {
-        this.traderItemStackHandler.setSellerOfSlot(slotIndex, seller);
+        if (stack != ItemStack.EMPTY) {
+            this.traderItemStackHandler.setSellerOfSlot(slotIndex, seller);
+            DynamicEconomy.LOGGER.debug("{} gave {} to a consignor to sell", seller, stack);
+        }
     }
 
     /**

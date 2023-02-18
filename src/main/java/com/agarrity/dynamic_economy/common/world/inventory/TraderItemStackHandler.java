@@ -33,7 +33,7 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
     @Override
     public void setStackInSlot(int slot, @Nonnull ItemStack stack) {
         validateSlotIndex(slot);
-        this.stacks.get(slot).itemStack = stack;
+        this.stacks.set(slot, new OwnedItemStack(stack));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
     @Nonnull
     public ItemStack getStackInSlot(int slot) {
         validateSlotIndex(slot);
-        return this.stacks.get(slot).itemStack;
+        return this.stacks.get(slot).getItemStack();
     }
 
     @Override
@@ -59,7 +59,7 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
 
         validateSlotIndex(slot);
 
-        ItemStack existing = this.stacks.get(slot).itemStack;
+        ItemStack existing = this.stacks.get(slot).getItemStack();
 
         int limit = getStackLimit(slot, stack);
 
@@ -77,7 +77,7 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
 
         if (!simulate) {
             if (existing.isEmpty()) {
-                this.stacks.get(slot).itemStack = reachedLimit ? ItemHandlerHelper.copyStackWithSize(stack, limit) : stack;
+                this.stacks.set(slot, reachedLimit ? new OwnedItemStack(ItemHandlerHelper.copyStackWithSize(stack, limit)) : new OwnedItemStack(stack));
             } else {
                 existing.grow(reachedLimit ? limit : stack.getCount());
             }
@@ -94,7 +94,7 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
 
         validateSlotIndex(slot);
 
-        ItemStack existing = this.stacks.get(slot).itemStack;
+        ItemStack existing = this.stacks.get(slot).getItemStack();
 
         if (existing.isEmpty())
             return ItemStack.EMPTY;
@@ -110,7 +110,7 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
             }
         } else {
             if (!simulate) {
-                this.stacks.get(slot).itemStack = ItemHandlerHelper.copyStackWithSize(existing, existing.getCount() - toExtract);
+                this.stacks.set(slot, new OwnedItemStack(ItemHandlerHelper.copyStackWithSize(existing, existing.getCount() - toExtract)));
             }
 
             return ItemHandlerHelper.copyStackWithSize(existing, toExtract);
@@ -155,24 +155,21 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
         for (int i = 0; i < tagList.size(); i++) {
             CompoundTag itemTags = tagList.getCompound(i);
             int slot = itemTags.getInt("Slot");
-            final UUID seller = itemTags.getUUID("seller");
 
             if (slot >= 0 && slot < stacks.size()) {
-                final var ownedItem = stacks.get(slot);
-                ownedItem.itemStack = ItemStack.of(itemTags);
-                ownedItem.seller = seller;
+                stacks.set(slot, OwnedItemStack.of(itemTags));
             }
         }
     }
 
     public UUID getSellerOfSlot(final int index) {
         validateSlotIndex(index);
-        return stacks.get(index).seller;
+        return stacks.get(index).getSeller();
     }
 
     public void setSellerOfSlot(final int index, UUID sellerUUID) {
         validateSlotIndex(index);
-        stacks.get(index).seller = sellerUUID;
+        stacks.set(index, new OwnedItemStack(stacks.get(index).getItemStack(), sellerUUID));
     }
 
     protected void validateSlotIndex(int slot) {

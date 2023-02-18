@@ -61,10 +61,6 @@ public class AssessScreen extends AbstractContainerScreen<AssessMenu> {
             default -> rarityComponent.append(new TranslatableComponent("gui.dynamic_economy.assess.rarity.poor").withStyle(ChatFormatting.GRAY));
         }
         this.font.draw(pPoseStack, rarityComponent, 8, 41, ChatFormatting.DARK_GRAY.getColor());
-
-
-
-
     }
 
     @Override

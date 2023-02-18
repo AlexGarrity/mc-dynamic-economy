@@ -168,7 +168,10 @@ public class AnimalVillager extends Animal implements ITrader {
                 final var compoundTag = new CompoundTag();
                 itemStack.save(compoundTag);
                 if (this.getAnimalVillagerData().getProfession() == AnimalVillagerProfession.PLAYER_TRADER) {
-                    compoundTag.putUUID("seller", ((TraderItemStackHandler) this.traderItemStackHandler).getSellerOfSlot(i));
+                    final var sellerUUID = ((TraderItemStackHandler) this.traderItemStackHandler).getSellerOfSlot(i);
+                    if (sellerUUID != null) {
+                        compoundTag.putUUID("seller", sellerUUID);
+                    }
                 }
 
 
@@ -195,8 +198,10 @@ public class AnimalVillager extends Animal implements ITrader {
             if (!itemStack.isEmpty()) {
                 this.traderItemStackHandler.insertItem(i, itemStack, false);
                 if (this.getAnimalVillagerData().getProfession() == AnimalVillagerProfession.PLAYER_TRADER) {
-                    final var seller = compoundTag.getUUID("seller");
-                    ((TraderItemStackHandler) this.traderItemStackHandler).setSellerOfSlot(i, seller);
+                    if (compoundTag.hasUUID("seller")) {
+                        final var seller = compoundTag.getUUID("seller");
+                        ((TraderItemStackHandler) this.traderItemStackHandler).setSellerOfSlot(i, seller);
+                    }
                 }
             }
         }
