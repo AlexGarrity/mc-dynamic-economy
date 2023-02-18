@@ -28,7 +28,7 @@ public class TestWorldResourceTracker {
     @Test
     public void addItems() {
         WorldResourceTracker.addItemsToEconomy(new ItemStack(Items.COD, 3));
-        WorldResourceTracker.addItemsToEconomy(new ItemStack(Items.COD), 7);
+        WorldResourceTracker.addItemsToEconomy(Items.COD, 7);
 
         assertEquals(1, WorldResourceTracker.getItemFrequency(new ItemStack(Items.COD, 10)).orElseThrow().intValue());
         assertEquals(new CurrencyAmount(POOL_SIZE / 10), WorldResourceTracker.estimateItemValue(new ItemStack(Items.COD, 1)).orElseThrow());
@@ -38,14 +38,14 @@ public class TestWorldResourceTracker {
     @Test
     public void removeItems() {
         WorldResourceTracker.addItemsToEconomy(new ItemStack(Items.COD, 3));
-        WorldResourceTracker.addItemsToEconomy(new ItemStack(Items.COD), 7);
+        WorldResourceTracker.addItemsToEconomy(Items.COD, 7);
 
         assertEquals(1, WorldResourceTracker.getItemFrequency(new ItemStack(Items.COD, 10)).orElseThrow().intValue());
         assertEquals(new CurrencyAmount(POOL_SIZE / 10), WorldResourceTracker.estimateItemValue(new ItemStack(Items.COD, 1)).orElseThrow());
         assertEquals(new CurrencyAmount(POOL_SIZE), WorldResourceTracker.estimateItemsValue(new ItemStack(Items.COD, 10)).orElseThrow());
 
         WorldResourceTracker.removeItemsFromEconomy(new ItemStack(Items.COD, 1));
-        WorldResourceTracker.removeItemsFromEconomy(new ItemStack(Items.COD), 1);
+        WorldResourceTracker.removeItemsFromEconomy(Items.COD, 1);
 
         assertEquals(0, WorldResourceTracker.getItemFrequency(new ItemStack(Items.COD, 8)).orElseThrow().intValue());
         assertEquals(new CurrencyAmount(POOL_SIZE / 8), WorldResourceTracker.estimateItemValue(new ItemStack(Items.COD, 1)).orElseThrow());
