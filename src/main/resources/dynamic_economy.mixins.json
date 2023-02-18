@@ -6,9 +6,13 @@
   "refmap": "dynamic_economy.refmap.json",
   "mixins": [
     "MixinAbstractArrow",
+    "MixinAbstractProjectileDispenseBehavior",
+    "MixinDefaultDispenseItemBehavior",
     "MixinHopperBlockEntity",
     "MixinLootTable",
-    "MixinMerchantResultSlot"
+    "MixinMerchantResultSlot",
+    "MixinShearsDispenseItemBehavior",
+    "MixinShulkerBoxDispenseBehavior"
   ],
   "injectors": {
     "defaultRequire": 1

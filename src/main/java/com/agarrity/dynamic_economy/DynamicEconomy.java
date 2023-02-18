@@ -71,7 +71,6 @@ public class DynamicEconomy {
 
             event.enqueueWork(TriggerInit::registerTriggers);
             event.enqueueWork(EntityInit::registerSpawnPlacements);
-            event.enqueueWork(DispenserOverride::overwriteDispenserBehaviours);
 
             event.enqueueWork(() -> {
                         final List<Integer> currencySizes = new ArrayList<>();
