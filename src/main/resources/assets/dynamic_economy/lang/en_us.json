@@ -4,12 +4,17 @@
   "item.dynamic_economy.fixed_currency": "Crown",
   "item.dynamic_economy.dynamic_currency": "Credit Note",
   "item.dynamic_economy.coin_bag": "Coin Purse",
+  "item.dynamic_economy.banker_animal_villager_spawn_egg": "Banker Animal Villager Spawn Egg",
+  "item.dynamic_economy.assessor_animal_villager_spawn_egg": "Assessor Animal Villager Spawn Egg",
+  "item.dynamic_economy.player_trader_animal_villager_spawn_egg": "Player Trader Animal Villager Spawn Egg",
+  "item.dynamic_economy.trader_animal_villager_spawn_egg": "Trader Animal Villager Spawn Egg",
   "item.dynamic_economy.animal_villager_spawn_egg": "Animal Villager Spawn Egg",
 
   "entity.dynamic_economy.animal_villager": "Animal Villager",
   "entity.dynamic_economy.animal_villager.banker": "Banker",
   "entity.dynamic_economy.animal_villager.assessor": "Assessor",
   "entity.dynamic_economy.animal_villager.trader": "Trader",
+  "entity.dynamic_economy.animal_villager.player_trader": "Consignor",
 
   "advancements.dynamic_economy.root.title": "Economy",
   "advancements.dynamic_economy.root.description": "Participating in economic activities",
@@ -60,7 +65,8 @@
   "gui.dynamic_economy.banking.quantity": "Quantity",
   "gui.dynamic_economy.banking.withdraw": "Withdraw",
 
-  "gui.dynamic_economy.trading.balance": "Inventory Balance",
+  "gui.dynamic_economy.trading.inventory_balance": "Inventory Balance",
+  "gui.dynamic_economy.trading.bank_balance": "Bank Balance",
 
   "gui.dynamic_economy.assess.value": "Value",
   "gui.dynamic_economy.assess.rarity": "Rarity",

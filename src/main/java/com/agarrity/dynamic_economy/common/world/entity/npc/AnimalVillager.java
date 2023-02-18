@@ -3,10 +3,7 @@ package com.agarrity.dynamic_economy.common.world.entity.npc;
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.network.syncher.DEEntityDataSerializers;
-import com.agarrity.dynamic_economy.common.world.inventory.AssessMenu;
-import com.agarrity.dynamic_economy.common.world.inventory.BankingMenu;
-import com.agarrity.dynamic_economy.common.world.inventory.TradeMenu;
-import com.agarrity.dynamic_economy.common.world.inventory.TraderItemStackHandler;
+import com.agarrity.dynamic_economy.common.world.inventory.*;
 import com.agarrity.dynamic_economy.init.EntityInit;
 import com.agarrity.dynamic_economy.init.ItemInit;
 import com.mojang.serialization.Dynamic;
@@ -43,6 +40,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +54,7 @@ public class AnimalVillager extends Animal implements ITrader {
     public static final int INVENTORY_SIZE = 12;
 
     private static final EntityDataAccessor<AnimalVillagerData> DATA_ANIMAL_VILLAGER = SynchedEntityData.defineId(AnimalVillager.class, DEEntityDataSerializers.ANIMAL_VILLAGER_DATA);
-    private final TraderItemStackHandler traderItemStackHandler = new TraderItemStackHandler();
+    private final IItemHandler traderItemStackHandler;
     private Player tradingPlayer = null;
 
     public AnimalVillager(final EntityType<? extends AnimalVillager> pEntityType, final Level pLevel) {
@@ -68,6 +67,12 @@ public class AnimalVillager extends Animal implements ITrader {
         this.getNavigation().setCanFloat(true);
         this.setCanPickUpLoot(false);
         this.setAnimalVillagerData(this.getAnimalVillagerData().setSpecies(species).setProfession(profession));
+
+        traderItemStackHandler = switch (profession) {
+            case AnimalVillagerProfession.PLAYER_TRADER -> new TraderItemStackHandler(INVENTORY_SIZE);
+            case AnimalVillagerProfession.TRADER -> new ItemStackHandler(INVENTORY_SIZE);
+            default -> new ItemStackHandler(0);
+        };
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
@@ -162,7 +167,11 @@ public class AnimalVillager extends Animal implements ITrader {
             if (!itemStack.isEmpty()) {
                 final var compoundTag = new CompoundTag();
                 itemStack.save(compoundTag);
-                compoundTag.putUUID("seller", traderItemStackHandler.getSellerOfSlot(i));
+                if (this.getAnimalVillagerData().getProfession() == AnimalVillagerProfession.PLAYER_TRADER) {
+                    compoundTag.putUUID("seller", ((TraderItemStackHandler) this.traderItemStackHandler).getSellerOfSlot(i));
+                }
+
+
                 itemListTag.add(compoundTag);
             }
         }
@@ -181,11 +190,14 @@ public class AnimalVillager extends Animal implements ITrader {
         final var inventoryTag = pCompound.getList("inventory", Tag.TAG_COMPOUND);
 
         for (int i = 0; i < inventoryTag.size(); ++i) {
-            final var itemStack = ItemStack.of(inventoryTag.getCompound(i));
-            final var seller = inventoryTag.getCompound(i).getUUID("seller");
+            final var compoundTag = inventoryTag.getCompound(i);
+            final var itemStack = ItemStack.of(compoundTag);
             if (!itemStack.isEmpty()) {
                 this.traderItemStackHandler.insertItem(i, itemStack, false);
-                this.traderItemStackHandler.setSellerOfSlot(i, seller);
+                if (this.getAnimalVillagerData().getProfession() == AnimalVillagerProfession.PLAYER_TRADER) {
+                    final var seller = compoundTag.getUUID("seller");
+                    ((TraderItemStackHandler) this.traderItemStackHandler).setSellerOfSlot(i, seller);
+                }
             }
         }
     }
@@ -199,6 +211,8 @@ public class AnimalVillager extends Animal implements ITrader {
                     new TranslatableComponent("entity.dynamic_economy.animal_villager.banker");
             case AnimalVillagerProfession.TRADER ->
                     new TranslatableComponent("entity.dynamic_economy.animal_villager.trader");
+            case AnimalVillagerProfession.PLAYER_TRADER ->
+                    new TranslatableComponent("entity.dynamic_economy.animal_villager.player_trader");
             default -> new TranslatableComponent("entity.dynamic_economy.animal_villager");
         };
     }
@@ -258,10 +272,12 @@ public class AnimalVillager extends Animal implements ITrader {
             case AnimalVillagerProfession.NONE -> {
                 return;
             }
+            case AnimalVillagerProfession.TRADER ->
+                    menu = new SimpleMenuProvider((id, inventory, player) -> new SystemTradeMenu(id, inventory, this.traderItemStackHandler, this), pDisplayName);
             case AnimalVillagerProfession.BANKER ->
                     menu = new SimpleMenuProvider((id, inventory, player) -> new BankingMenu(id, inventory, this), pDisplayName);
-            case AnimalVillagerProfession.TRADER ->
-                    menu = new SimpleMenuProvider((id, inventory, player) -> new TradeMenu(id, inventory, this.traderItemStackHandler, this), pDisplayName);
+            case AnimalVillagerProfession.PLAYER_TRADER ->
+                    menu = new SimpleMenuProvider((id, inventory, player) -> new PlayerTradeMenu(id, inventory, (TraderItemStackHandler) this.traderItemStackHandler, this), pDisplayName);
             case AnimalVillagerProfession.ASSESSOR ->
                     menu = new SimpleMenuProvider((id, inventory, player) -> new AssessMenu(id, inventory, this), pDisplayName);
             default ->

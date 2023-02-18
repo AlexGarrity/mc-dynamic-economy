@@ -1,5 +1,6 @@
 package com.agarrity.dynamic_economy.common.network;
 
+import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.economy.bank.Bank;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
@@ -23,7 +24,8 @@ public class ServerboundBalanceMessage implements IMessage {
 
     @Override
     public void handle(final Supplier<NetworkEvent.Context> context) {
-        context.get().enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
+        context.get().enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
+            DynamicEconomy.LOGGER.debug("Sending balance back");
             final var sender = context.get().getSender();
             if (sender == null) {
                 return;

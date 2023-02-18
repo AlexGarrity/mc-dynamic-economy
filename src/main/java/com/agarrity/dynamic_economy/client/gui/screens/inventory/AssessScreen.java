@@ -18,8 +18,6 @@ import org.jetbrains.annotations.NotNull;
 public class AssessScreen extends AbstractContainerScreen<AssessMenu> {
 
     private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(DynamicEconomy.MOD_ID, "textures/gui/container/assess.png");
-    private static final int TEXTURE_WIDTH = 256;
-    private static final int TEXTURE_HEIGHT = 256;
 
     public AssessScreen(AssessMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
@@ -61,7 +59,7 @@ public class AssessScreen extends AbstractContainerScreen<AssessMenu> {
             case 3 -> rarityComponent.append(new TranslatableComponent("gui.dynamic_economy.assess.rarity.uncommon").withStyle(ChatFormatting.GREEN));
             case 4 -> rarityComponent.append(new TranslatableComponent("gui.dynamic_economy.assess.rarity.common").withStyle(ChatFormatting.WHITE));
             default -> rarityComponent.append(new TranslatableComponent("gui.dynamic_economy.assess.rarity.poor").withStyle(ChatFormatting.GRAY));
-        };
+        }
         this.font.draw(pPoseStack, rarityComponent, 8, 41, ChatFormatting.DARK_GRAY.getColor());
 
 

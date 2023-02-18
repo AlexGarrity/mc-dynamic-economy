@@ -4,7 +4,7 @@ import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
 import com.agarrity.dynamic_economy.common.network.ServerboundBalanceMessage;
-import com.agarrity.dynamic_economy.common.world.inventory.TradeMenu;
+import com.agarrity.dynamic_economy.common.world.inventory.PlayerTradeMenu;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -16,15 +16,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
-public class TradeScreen extends AbstractContainerScreen<TradeMenu> {
+public class PlayerTradeScreen extends AbstractContainerScreen<PlayerTradeMenu> implements ICashScreen {
     private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(DynamicEconomy.MOD_ID, "textures/gui/container/trader.png");
-    private static final int TEXTURE_WIDTH = 256;
-    private static final int TEXTURE_HEIGHT = 256;
+    private CurrencyAmount balance;
 
-    public TradeScreen(TradeMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
+    public PlayerTradeScreen(PlayerTradeMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
         this.imageWidth = 176;
         this.inventoryLabelX = 7;
+        setBalance(new CurrencyAmount());
     }
 
     @Override
@@ -36,10 +36,10 @@ public class TradeScreen extends AbstractContainerScreen<TradeMenu> {
     @Override
     protected void renderLabels(@NotNull PoseStack pPoseStack, int pMouseX, int pMouseY) {
         super.renderLabels(pPoseStack, pMouseX, pMouseY);
-        final var balanceComponent = new TranslatableComponent("gui.dynamic_economy.trading.balance");
+        final var balanceComponent = new TranslatableComponent("gui.dynamic_economy.trading.bank_balance");
 
         balanceComponent.append(": ");
-        balanceComponent.append(this.getMenu().calculateInventoryCoinValue().toString());
+        balanceComponent.append(this.balance.toString());
 
         this.font.draw(pPoseStack, balanceComponent, 8, 17, ChatFormatting.DARK_GRAY.getColor());
     }
@@ -60,5 +60,10 @@ public class TradeScreen extends AbstractContainerScreen<TradeMenu> {
         super.render(pose, mouseX, mouseY, partialTick);
         RenderSystem.disableBlend();
         this.renderTooltip(pose, mouseX, mouseY);
+    }
+
+    @Override
+    public void setBalance(@NotNull final CurrencyAmount amount) {
+        this.balance = amount;
     }
 }

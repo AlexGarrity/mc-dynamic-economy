@@ -1,6 +1,5 @@
 package com.agarrity.dynamic_economy.common.world.inventory;
 
-import com.agarrity.dynamic_economy.DynamicEconomy;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -179,39 +178,6 @@ public class TraderItemStackHandler implements IItemHandler, IItemHandlerModifia
     protected void validateSlotIndex(int slot) {
         if (slot < 0 || slot >= stacks.size())
             throw new RuntimeException("Slot " + slot + " not in valid range - [0," + stacks.size() + ")");
-    }
-
-    public static class OwnedItemStack {
-        public static OwnedItemStack EMPTY = new OwnedItemStack();
-        ItemStack itemStack;
-        UUID seller;
-
-        public OwnedItemStack() {
-            itemStack = ItemStack.EMPTY;
-            seller = null;
-        }
-
-        public OwnedItemStack(final CompoundTag compoundTag) {
-            itemStack = ItemStack.of(compoundTag);
-        }
-
-        public static OwnedItemStack of(CompoundTag compoundTag) {
-            try {
-                return new OwnedItemStack(compoundTag);
-            } catch (RuntimeException runtimeexception) {
-                DynamicEconomy.LOGGER.debug("Tried to load invalid item: {}", compoundTag, runtimeexception);
-                return EMPTY;
-            }
-        }
-
-        public void save(final CompoundTag compoundTag) {
-            itemStack.save(compoundTag);
-            compoundTag.putUUID("seller", seller);
-        }
-
-        public boolean isEmpty() {
-            return itemStack.isEmpty();
-        }
     }
 
 }

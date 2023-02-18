@@ -151,6 +151,8 @@ public class Bank {
      * @return An empty Optional if the account doesn't exist, otherwise a new CurrencyAmount containing the balance
      */
     public static Optional<CurrencyAmount> getAccountBalance(@NotNull final UUID player) {
+        DynamicEconomy.LOGGER.debug("Querying account balance of {}", player);
+
         final var optAccount = SAVED_DATA.getAccount(player);
 
         if (optAccount.isEmpty()) {

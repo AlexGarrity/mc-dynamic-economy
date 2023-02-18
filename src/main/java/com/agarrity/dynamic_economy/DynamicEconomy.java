@@ -2,11 +2,11 @@ package com.agarrity.dynamic_economy;
 
 import com.agarrity.dynamic_economy.client.gui.screens.inventory.AssessScreen;
 import com.agarrity.dynamic_economy.client.gui.screens.inventory.BankingScreen;
-import com.agarrity.dynamic_economy.client.gui.screens.inventory.TradeScreen;
+import com.agarrity.dynamic_economy.client.gui.screens.inventory.PlayerTradeScreen;
+import com.agarrity.dynamic_economy.client.gui.screens.inventory.SystemTradeScreen;
 import com.agarrity.dynamic_economy.client.model.AnimalVillagerModel;
 import com.agarrity.dynamic_economy.client.renderer.entity.AnimalVillagerRenderer;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
-import com.agarrity.dynamic_economy.common.misc.DispenserOverride;
 import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
 import com.agarrity.dynamic_economy.common.network.syncher.DEEntityDataSerializers;
 import com.agarrity.dynamic_economy.common.world.entity.npc.AnimalVillager;
@@ -27,7 +27,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.FileUtils;
@@ -87,7 +86,8 @@ public class DynamicEconomy {
             event.enqueueWork(
                     () -> {
                         MenuScreens.register(MenuInit.BANKING_MENU.get(), BankingScreen::new);
-                        MenuScreens.register(MenuInit.TRADER_MENU.get(), TradeScreen::new);
+                        MenuScreens.register(MenuInit.SYSTEM_TRADER_MENU.get(), SystemTradeScreen::new);
+                        MenuScreens.register(MenuInit.PLAYER_TRADER_MENU.get(), PlayerTradeScreen::new);
                         MenuScreens.register(MenuInit.ASSESS_MENU.get(), AssessScreen::new);
                     }
             );
@@ -126,11 +126,19 @@ public class DynamicEconomy {
         @SubscribeEvent
         public static void onRegisterEntityRenderers(final EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(EntityInit.ANIMAL_VILLAGER.get(), AnimalVillagerRenderer::new);
+            event.registerEntityRenderer(EntityInit.BANKER_ANIMAL_VILLAGER.get(), AnimalVillagerRenderer::new);
+            event.registerEntityRenderer(EntityInit.ASSESSOR_ANIMAL_VILLAGER.get(), AnimalVillagerRenderer::new);
+            event.registerEntityRenderer(EntityInit.TRADER_ANIMAL_VILLAGER.get(), AnimalVillagerRenderer::new);
+            event.registerEntityRenderer(EntityInit.PLAYER_TRADER_ANIMAL_VILLAGER.get(), AnimalVillagerRenderer::new);
         }
 
         @SubscribeEvent
         public static void onEntityAttributeCreation(final EntityAttributeCreationEvent event) {
             event.put(EntityInit.ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
+            event.put(EntityInit.BANKER_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
+            event.put(EntityInit.ASSESSOR_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
+            event.put(EntityInit.TRADER_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
+            event.put(EntityInit.PLAYER_TRADER_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
         }
     }
 }

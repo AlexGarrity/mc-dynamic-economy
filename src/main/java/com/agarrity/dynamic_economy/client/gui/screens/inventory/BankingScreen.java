@@ -23,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 public class BankingScreen extends AbstractContainerScreen<BankingMenu> implements ICashScreen {
 
     private static final ResourceLocation BACKGROUND_TEXTURE = new ResourceLocation(DynamicEconomy.MOD_ID, "textures/gui/container/banking.png");
-    private static final int TEXTURE_WIDTH = 256;
-    private static final int TEXTURE_HEIGHT = 256;
 
     private CurrencyAmount balance;
     private float quantityBoxAmount;

@@ -6,6 +6,7 @@ import com.agarrity.dynamic_economy.common.economy.bank.Bank;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.economy.resources.WorldResourceTracker;
+import com.agarrity.dynamic_economy.common.network.ClientboundBalanceMessage;
 import com.agarrity.dynamic_economy.common.network.ClientboundItemValueMessage;
 import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
 import com.agarrity.dynamic_economy.common.world.entity.npc.AnimalVillager;
@@ -30,18 +31,18 @@ import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.UUID;
 
-public class TradeMenu extends AbstractContainerMenu {
+public class PlayerTradeMenu extends AbstractContainerMenu {
 
     private final Player player;
     private final ITrader traderVillager;
     private final TraderItemStackHandler traderItemStackHandler;
 
-    public TradeMenu(final int containerId, final Inventory playerInventory) {
+    public PlayerTradeMenu(final int containerId, final Inventory playerInventory) {
         this(containerId, playerInventory, new TraderItemStackHandler(AnimalVillager.INVENTORY_SIZE), new ClientSideTrader(playerInventory.player));
     }
 
-    public TradeMenu(final int containerId, final Inventory playerInventory, final TraderItemStackHandler traderItemStackHandler, final ITrader trader) {
-        super(MenuInit.TRADER_MENU.get(), containerId);
+    public PlayerTradeMenu(final int containerId, final Inventory playerInventory, final TraderItemStackHandler traderItemStackHandler, final ITrader trader) {
+        super(MenuInit.SYSTEM_TRADER_MENU.get(), containerId);
         this.traderVillager = trader;
         this.player = playerInventory.player;
         this.traderItemStackHandler = traderItemStackHandler;
@@ -55,23 +56,23 @@ public class TradeMenu extends AbstractContainerMenu {
                 if (this.traderVillager.isClientSide()) {
                     addSlot(new SlotItemHandler(traderItemStackHandler, x + (y * 4), 90 + (x * 21), 7 + (y * 21)));
                 } else {
-                    addSlot(new SlotItemHandler(traderItemStackHandler, x + (y * 4), 90 + (x * 21), 7 + (y * 21)) {
+                    addSlot(new TraderSlotItemHandler(traderItemStackHandler, x + (y * 4), 90 + (x * 21), 7 + (y * 21)) {
                         @Override
                         public @NotNull ItemStack remove(int amount) {
-                            final int slotIndex = x + (y * 4);
-                            playerBuyItemFromTrader(this.getItem(), amount, traderItemStackHandler.getSellerOfSlot(slotIndex));
+                            playerBuyItemFromTrader(this.getItem(), amount, traderItemStackHandler.getSellerOfSlot(this.getSlotIndex()));
                             return super.remove(amount);
                         }
 
                         @Override
                         public void set(@NotNull ItemStack stack) {
+                            playerSellItemToTrader(stack, stack.getCount(), this.getSlotIndex(), player.getUUID());
                             super.set(stack);
-                            final int slotIndex = x + (y * 4);
-                            traderItemStackHandler.setSellerOfSlot(slotIndex, player.getUUID());
                         }
 
                         @Override
                         public boolean mayPlace(@NotNull final ItemStack pStack) {
+                            return false;
+                            /*
                             if (CurrencyHelper.getCurrencyValue(pStack).isPresent()) {
                                 return false;
                             }
@@ -81,12 +82,12 @@ public class TradeMenu extends AbstractContainerMenu {
                             }
 
                             return playerCanSellItem(pStack, pStack.getCount());
+                            */
                         }
 
                         @Override
                         public boolean mayPickup(Player playerIn) {
-                            final int slotIndex = x + (y * 4);
-                            final var sellerUUID = traderItemStackHandler.getSellerOfSlot(slotIndex);
+                            final var sellerUUID = traderItemStackHandler.getSellerOfSlot(this.getSlotIndex());
                             return playerCanAffordItem(this.getItem(), this.getItem().getCount()) || player.getUUID() == sellerUUID;
                         }
                     });
@@ -193,6 +194,7 @@ public class TradeMenu extends AbstractContainerMenu {
 
             if (itemStack1.isEmpty()) {
                 slot.set(ItemStack.EMPTY);
+                traderItemStackHandler.setSellerOfSlot(pIndex, player.getUUID());
             } else {
                 slot.setChanged();
             }
@@ -295,14 +297,7 @@ public class TradeMenu extends AbstractContainerMenu {
     public boolean playerCanAffordItem(final ItemStack stack, final int count) {
         final var newStack = new ItemStack(stack.getItem(), count);
         final var optValue = WorldResourceTracker.estimateItemsValue(newStack);
-        if (optValue.isEmpty()) {
-            return false;
-        }
-
-        final var inventoryValue = calculateInventoryCoinValue();
-
-        final var value = optValue.get();
-        return inventoryValue.isGreaterThan(value) || inventoryValue.isEqualTo(value);
+        return optValue.filter(currencyAmount -> Bank.balanceIsSufficient(player.getUUID(), currencyAmount)).isPresent();
     }
 
     /**
@@ -332,12 +327,17 @@ public class TradeMenu extends AbstractContainerMenu {
             return;
         }
 
-        if (!removeCurrencyFromPlayerInventory(optValue.get())) {
+        if (!Bank.transferCurrencyBetweenAccounts(player.getUUID(), seller, optValue.get())) {
             return;
         }
-
-        Bank.addCurrencyToAccount(seller, optValue.get());
         DynamicEconomy.LOGGER.debug("{} bought {} for {} from {}", player.getDisplayName().getString(), stack, optValue.get(), seller);
+
+        final var balance = Bank.getAccountBalance(player.getUUID());
+        balance.ifPresent(amount -> DynamicEconomyPacketHandler.INSTANCE.sendTo(new ClientboundBalanceMessage(amount), ((ServerPlayer) player).connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT));
+    }
+
+    public void playerSellItemToTrader(final ItemStack stack, final int count, final int slotIndex, UUID seller) {
+        this.traderItemStackHandler.setSellerOfSlot(slotIndex, seller);
     }
 
     /**
