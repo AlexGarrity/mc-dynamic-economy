@@ -52,7 +52,7 @@
   "gui.dynamic_economy.currency_name_major": "Crown",
   "gui.dynamic_economy.currency_name_major_plural": "Crowns",
 
-  "gui.dynamic_economy.item_valuation.message": "I'd say that's worth ",
+  "gui.dynamic_economy.item_valuation.message": "I'd say that's worth %s",
 
   "gui.dynamic_economy.tooltip.value": "Last Known Value",
   "gui.dynamic_economy.tooltip.priceless": "Priceless",
@@ -76,5 +76,13 @@
   "gui.dynamic_economy.assess.rarity.rare": "Super Rare",
   "gui.dynamic_economy.assess.rarity.uncommon": "Rare",
   "gui.dynamic_economy.assess.rarity.common": "Uncommon",
-  "gui.dynamic_economy.assess.rarity.poor": "Common"
+  "gui.dynamic_economy.assess.rarity.poor": "Common",
+
+  "command.dynamic_economy.resource.set": "Set the number of %s in the economy to %d",
+  "command.dynamic_economy.resource.get": "There are %d of %s in the economy, giving one a rarity of %s and a value of %s",
+  "command.dynamic_economy.resource.get.none": "No %s exist in the economy",
+  "command.dynamic_economy.bank.get": "%s's bank balance is %s",
+  "command.dynamic_economy.bank.pay": "Sent %s to %s",
+  "command.dynamic_economy.bank.pay.self_pay": "You cannot pay yourself",
+  "command.dynamic_economy.bank.pay.insufficient_balance": "Your balance was insufficient"
 }

@@ -152,6 +152,18 @@ public class WorldResourceTracker {
         SAVED_DATA.incrementChunksInWorld();
     }
 
+    public static boolean itemExistsInEconomy(@NotNull final Item item) {
+        return SAVED_DATA.getItemsInWorld().containsKey(item.getRegistryName().toString());
+    }
+
+    public static void setItemsInEconomy(@NotNull final Item item, int count) {
+        SAVED_DATA.getItemsInWorld().put(item.getRegistryName().toString(), count);
+    }
+
+    public static int getItemsInEconomy(@NotNull final Item item) {
+        return SAVED_DATA.getItemsInWorld().get(item.getRegistryName().toString());
+    }
+
     /**
      * Add an item to the resource tracker's economy
      *

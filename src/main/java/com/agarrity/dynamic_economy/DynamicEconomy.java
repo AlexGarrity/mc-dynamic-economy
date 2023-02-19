@@ -14,12 +14,14 @@ import com.agarrity.dynamic_economy.init.EntityInit;
 import com.agarrity.dynamic_economy.init.ItemInit;
 import com.agarrity.dynamic_economy.init.MenuInit;
 import com.agarrity.dynamic_economy.init.TriggerInit;
+import com.agarrity.dynamic_economy.server.commands.DynamicEconomyCommand;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -57,10 +59,18 @@ public class DynamicEconomy {
         ItemInit.ITEMS_REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
+    @Mod.EventBusSubscriber(bus= Mod.EventBusSubscriber.Bus.FORGE)
+    public static class ForgeEvents {
+        @SubscribeEvent
+        public static void onRegisterCommands(final RegisterCommandsEvent event) {
+            DynamicEconomyCommand.register(event.getDispatcher());
+        }
+    }
+
     // You can use EventBusSubscriber to automatically subscribe events on the contained class (this is subscribing to the MOD
     // Event bus for receiving Registry Events)
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class RegistryEvents {
+    public static class ModEvents {
 
         @SubscribeEvent
         public static void onCommonSetup(final FMLCommonSetupEvent event) {
