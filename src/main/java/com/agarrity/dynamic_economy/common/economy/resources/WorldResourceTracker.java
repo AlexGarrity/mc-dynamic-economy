@@ -2,6 +2,7 @@ package com.agarrity.dynamic_economy.common.economy.resources;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
+import com.agarrity.dynamic_economy.util.RegistryHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -46,14 +47,10 @@ public class WorldResourceTracker {
             return false;
         }
 
-        if (block.getRegistryName() == null) {
-            return false;
-        }
-
         SAVED_DATA.incrementBlocksInWorld();
         SAVED_DATA.setDirty();
 
-        final var blockName = block.getRegistryName().toString();
+        final var blockName = RegistryHelper.getRegistryNameOrThrow(block);
         if (!FINITE_BLOCKS.contains(blockName)) {
             return false;
         }
@@ -90,14 +87,10 @@ public class WorldResourceTracker {
             return false;
         }
 
-        if (block.getRegistryName() == null) {
-            return false;
-        }
-
         SAVED_DATA.decrementBlocksInWorld();
         SAVED_DATA.setDirty();
 
-        final var blockName = block.getRegistryName().toString();
+        final var blockName = RegistryHelper.getRegistryNameOrThrow(block);
         if (!FINITE_BLOCKS.contains(blockName)) {
             return false;
         }
@@ -153,15 +146,15 @@ public class WorldResourceTracker {
     }
 
     public static boolean itemExistsInEconomy(@NotNull final Item item) {
-        return SAVED_DATA.getItemsInWorld().containsKey(item.getRegistryName().toString());
+        return SAVED_DATA.getItemsInWorld().containsKey(RegistryHelper.getRegistryNameOrThrow(item));
     }
 
     public static void setItemsInEconomy(@NotNull final Item item, int count) {
-        SAVED_DATA.getItemsInWorld().put(item.getRegistryName().toString(), count);
+        SAVED_DATA.getItemsInWorld().put(RegistryHelper.getRegistryNameOrThrow(item), count);
     }
 
     public static int getItemsInEconomy(@NotNull final Item item) {
-        return SAVED_DATA.getItemsInWorld().get(item.getRegistryName().toString());
+        return SAVED_DATA.getItemsInWorld().get(RegistryHelper.getRegistryNameOrThrow(item));
     }
 
     /**
@@ -184,15 +177,12 @@ public class WorldResourceTracker {
             return;
         }
 
-        if (item.getRegistryName() == null) {
-            return;
-        }
-
         if (item == ItemStack.EMPTY.getItem()) {
             return;
         }
 
-        final var itemName = item.getRegistryName().toString();
+        final var itemName = RegistryHelper.getRegistryNameOrThrow(item);
+
         if (SAVED_DATA.getItemsInWorld().containsKey(itemName)) {
             final var existingCount = SAVED_DATA.getItemsInWorld().get(itemName);
             SAVED_DATA.getItemsInWorld().put(itemName, existingCount + count);
@@ -225,15 +215,11 @@ public class WorldResourceTracker {
             return;
         }
 
-        if (item.getRegistryName() == null) {
-            return;
-        }
-
         if (item == ItemStack.EMPTY.getItem()) {
             return;
         }
 
-        final var itemName = item.getRegistryName().toString();
+        final var itemName = RegistryHelper.getRegistryNameOrThrow(item);
 
         if (!SAVED_DATA.getItemsInWorld().containsKey(itemName)) {
             DynamicEconomy.LOGGER.debug("Tried to remove {} from the economy, but there is none to remove", item);
@@ -304,11 +290,7 @@ public class WorldResourceTracker {
             return Optional.empty();
         }
 
-        if (stack.getItem().getRegistryName() == null) {
-            return Optional.empty();
-        }
-
-        final var itemName = stack.getItem().getRegistryName().toString();
+        final var itemName = RegistryHelper.getRegistryNameOrThrow(stack);
         final var economyCount = SAVED_DATA.getItemsInWorld().getOrDefault(itemName, 0);
         // Virtual isn't used as we don't use a global trader store system
         final var virtualCount = 0;
@@ -332,11 +314,7 @@ public class WorldResourceTracker {
             return Optional.empty();
         }
 
-        if (stack.getItem().getRegistryName() == null) {
-            return Optional.empty();
-        }
-
-        final var itemName = stack.getItem().getRegistryName().toString();
+        final var itemName = RegistryHelper.getRegistryNameOrThrow(stack);
         if (!SAVED_DATA.getItemsInWorld().containsKey(itemName)) {
             return Optional.empty();
         }

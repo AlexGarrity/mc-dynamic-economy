@@ -1,5 +1,6 @@
 package com.agarrity.dynamic_economy;
 
+import com.agarrity.dynamic_economy.util.RegistryHelper;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.ForgeConfigSpec;
 
@@ -27,66 +28,66 @@ public class DynamicEconomyConfig {
 
     private static final List<String> DEFAULT_NON_RENEWABLE_BLOCKS = List.of(
             // From Sponge
-            Blocks.SPONGE.getRegistryName().toString(),
-            Blocks.WET_SPONGE.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.SPONGE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.WET_SPONGE),
             // From Ancient Debris
-            Blocks.ANCIENT_DEBRIS.getRegistryName().toString(),
-            Blocks.NETHERITE_BLOCK.getRegistryName().toString(),
-            Blocks.LODESTONE.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.ANCIENT_DEBRIS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.NETHERITE_BLOCK),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.LODESTONE),
             // From Calcite
-            Blocks.CALCITE.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.CALCITE),
             // From Deepslate
-            Blocks.DEEPSLATE.getRegistryName().toString(),
-            Blocks.COBBLED_DEEPSLATE.getRegistryName().toString(),
-            Blocks.COBBLED_DEEPSLATE_SLAB.getRegistryName().toString(),
-            Blocks.COBBLED_DEEPSLATE_STAIRS.getRegistryName().toString(),
-            Blocks.COBBLED_DEEPSLATE_WALL.getRegistryName().toString(),
-            Blocks.POLISHED_DEEPSLATE.getRegistryName().toString(),
-            Blocks.POLISHED_DEEPSLATE_SLAB.getRegistryName().toString(),
-            Blocks.POLISHED_DEEPSLATE_STAIRS.getRegistryName().toString(),
-            Blocks.POLISHED_DEEPSLATE_WALL.getRegistryName().toString(),
-            Blocks.CHISELED_DEEPSLATE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_BRICKS.getRegistryName().toString(),
-            Blocks.DEEPSLATE_BRICK_SLAB.getRegistryName().toString(),
-            Blocks.DEEPSLATE_BRICK_STAIRS.getRegistryName().toString(),
-            Blocks.DEEPSLATE_BRICK_WALL.getRegistryName().toString(),
-            Blocks.CRACKED_DEEPSLATE_BRICKS.getRegistryName().toString(),
-            Blocks.DEEPSLATE_TILES.getRegistryName().toString(),
-            Blocks.DEEPSLATE_TILE_SLAB.getRegistryName().toString(),
-            Blocks.DEEPSLATE_TILE_STAIRS.getRegistryName().toString(),
-            Blocks.DEEPSLATE_TILE_WALL.getRegistryName().toString(),
-            Blocks.CRACKED_DEEPSLATE_TILES.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.COBBLED_DEEPSLATE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.COBBLED_DEEPSLATE_SLAB),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.COBBLED_DEEPSLATE_STAIRS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.COBBLED_DEEPSLATE_WALL),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.POLISHED_DEEPSLATE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.POLISHED_DEEPSLATE_SLAB),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.POLISHED_DEEPSLATE_STAIRS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.POLISHED_DEEPSLATE_WALL),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.CHISELED_DEEPSLATE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_BRICKS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_BRICK_SLAB),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_BRICK_STAIRS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_BRICK_WALL),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.CRACKED_DEEPSLATE_BRICKS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_TILES),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_TILE_SLAB),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_TILE_STAIRS),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_TILE_WALL),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.CRACKED_DEEPSLATE_TILES),
             // From Dead Bush
-            Blocks.DEAD_BUSH.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEAD_BUSH),
             // From Diamond Ore
-            Blocks.DIAMOND_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_DIAMOND_ORE.getRegistryName().toString(),
-            Blocks.DIAMOND_BLOCK.getRegistryName().toString(),
-            Blocks.ENCHANTING_TABLE.getRegistryName().toString(),
-            Blocks.JUKEBOX.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DIAMOND_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_DIAMOND_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DIAMOND_BLOCK),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.ENCHANTING_TABLE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.JUKEBOX),
             // From Emerald Ore
-            Blocks.EMERALD_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_EMERALD_ORE.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.EMERALD_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_EMERALD_ORE),
             // From Nether Ores
-            Blocks.NETHER_QUARTZ_ORE.getRegistryName().toString(),
-            Blocks.NETHER_GOLD_ORE.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.NETHER_QUARTZ_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.NETHER_GOLD_ORE),
             // From Ores
-            Blocks.COAL_ORE.getRegistryName().toString(),
-            Blocks.IRON_ORE.getRegistryName().toString(),
-            Blocks.REDSTONE_ORE.getRegistryName().toString(),
-            Blocks.LAPIS_ORE.getRegistryName().toString(),
-            Blocks.GOLD_ORE.getRegistryName().toString(),
-            Blocks.COPPER_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_COAL_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_IRON_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_REDSTONE_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_LAPIS_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_GOLD_ORE.getRegistryName().toString(),
-            Blocks.DEEPSLATE_COPPER_ORE.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.COAL_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.IRON_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.REDSTONE_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.LAPIS_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.GOLD_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.COPPER_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_COAL_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_IRON_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_REDSTONE_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_LAPIS_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_GOLD_ORE),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.DEEPSLATE_COPPER_ORE),
             // From Spore Blossom
-            Blocks.SPORE_BLOSSOM.getRegistryName().toString(),
+            RegistryHelper.getRegistryNameOrThrow(Blocks.SPORE_BLOSSOM),
             // From Tuff
-            Blocks.TUFF.getRegistryName().toString()
+            RegistryHelper.getRegistryNameOrThrow(Blocks.TUFF)
     );
 
     public static final ForgeConfigSpec GENERAL_SPEC;

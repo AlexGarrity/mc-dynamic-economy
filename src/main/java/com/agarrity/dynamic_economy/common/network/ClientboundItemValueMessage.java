@@ -4,6 +4,7 @@ import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.client.economy.ItemStats;
 import com.agarrity.dynamic_economy.common.economy.bank.CurrencyAmount;
 import com.agarrity.dynamic_economy.client.economy.ClientResourceTracker;
+import com.agarrity.dynamic_economy.util.RegistryHelper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -21,8 +22,7 @@ public class ClientboundItemValueMessage implements IMessage {
     final int rarity;
 
     public ClientboundItemValueMessage(final Item item, @Nullable final CurrencyAmount value, int rarity) {
-        assert(item.getRegistryName() != null);
-        this.itemName = item.getRegistryName().toString();
+        this.itemName = RegistryHelper.getRegistryNameOrThrow(item);
 
         if (value != null) {
             this.value = value;

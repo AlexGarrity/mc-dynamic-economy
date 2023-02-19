@@ -65,10 +65,6 @@ public class TooltipListener {
             }
 
         } else {
-            if (item.getRegistryName() == null) {
-                return;
-            }
-
             final var itemStats = ClientResourceTracker.itemStats.get(item);
             if (itemStats == null) {
                 return;

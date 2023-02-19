@@ -7,6 +7,7 @@ import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
 import com.agarrity.dynamic_economy.common.world.entity.npc.ClientSideTrader;
 import com.agarrity.dynamic_economy.common.world.entity.npc.ITrader;
 import com.agarrity.dynamic_economy.init.MenuInit;
+import com.agarrity.dynamic_economy.util.RegistryHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -43,7 +44,7 @@ public class AssessMenu extends AbstractContainerMenu {
 
             final var value = itemValue.orElse(null);
             final var rarity = itemRarity.orElse(-1);
-            DynamicEconomy.LOGGER.debug("Sending the value of {} as {}, with a rarity of {}", itemStack.getItem().getRegistryName().toString(), itemValue, itemRarity);
+            DynamicEconomy.LOGGER.debug("Sending the value of {} as {}, with a rarity of {}", RegistryHelper.getRegistryNameOrThrow(itemStack), itemValue, itemRarity);
 
             DynamicEconomyPacketHandler.INSTANCE.sendTo(
                     new ClientboundItemValueMessage(itemStack.getItem(), value, rarity),
@@ -91,7 +92,7 @@ public class AssessMenu extends AbstractContainerMenu {
     public @NotNull ItemStack quickMoveStack(@NotNull final Player pPlayer, final int pIndex) {
         var itemstack = ItemStack.EMPTY;
         final var slot = this.slots.get(pIndex);
-        if (slot != null && slot.hasItem()) {
+        if (slot.hasItem()) {
             final var itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
             if (pIndex < this.traderInventory.getSlots()) {
@@ -113,7 +114,7 @@ public class AssessMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public void slotsChanged(Container pContainer) {
+    public void slotsChanged(@NotNull Container pContainer) {
         super.slotsChanged(pContainer);
     }
 
