@@ -10,10 +10,10 @@ import com.agarrity.dynamic_economy.common.economy.resources.WorldSavedData;
 import com.agarrity.dynamic_economy.init.EntityInit;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraftforge.event.entity.living.LivingDestroyBlockEvent;
@@ -119,18 +119,15 @@ public class WorldEventListener {
         WorldResourceTracker.removeBlockFromWorld(block);
     }
 
-    // Make animal villagers spawn in all biomes in groups of up to 4
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    // Make animal villagers spawn in all biomes, except the Nether and End, in groups of up to 4
+    @SubscribeEvent
     public static void onRegisterBiomes(final BiomeLoadingEvent event) {
-        DynamicEconomy.LOGGER.debug("Biome loading event");
-        final var builder = event.getSpawns();
-        switch (event.getCategory()) {
-            case PLAINS, FOREST, SAVANNA -> {
-                final var biomeName = event.getName();
-                DynamicEconomy.LOGGER.debug("Adding animal villager spawning to biome \"{}\"", (biomeName != null) ? event.getName().toString() : "UNKNOWN");
-                builder.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityInit.ANIMAL_VILLAGER.get(), 6, 1, 4));
-            }
+        if (event.getCategory().equals(Biome.BiomeCategory.THEEND) || event.getCategory().equals(Biome.BiomeCategory.NETHER)) {
+            return;
         }
+
+        final var spawner = event.getSpawns().getSpawner(EntityInit.ANIMAL_VILLAGER.get().getCategory());
+        spawner.add(new MobSpawnSettings.SpawnerData(EntityInit.ANIMAL_VILLAGER.get(), 2, 1, 4));
     }
 
     @SubscribeEvent

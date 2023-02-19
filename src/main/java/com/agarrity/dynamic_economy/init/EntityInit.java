@@ -19,7 +19,7 @@ public class EntityInit {
     public static final RegistryObject<EntityType<AnimalVillager>> ANIMAL_VILLAGER = ENTITIES_REGISTRY.register(
             "animal_villager",
             () -> EntityType.Builder
-                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.NONE), MobCategory.MISC)
+                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.getRandomProfession()), MobCategory.CREATURE)
                     .clientTrackingRange(10)
                     .sized(0.6F, 1.8F)
                     .build("animal_villager")
@@ -28,7 +28,7 @@ public class EntityInit {
     public static final RegistryObject<EntityType<AnimalVillager>> BANKER_ANIMAL_VILLAGER = ENTITIES_REGISTRY.register(
             "banker_animal_villager",
             () -> EntityType.Builder
-                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.BANKER), MobCategory.MISC)
+                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.BANKER), MobCategory.CREATURE)
                     .clientTrackingRange(10)
                     .sized(0.6F, 1.8F)
                     .build("banker_animal_villager")
@@ -37,7 +37,7 @@ public class EntityInit {
     public static final RegistryObject<EntityType<AnimalVillager>> TRADER_ANIMAL_VILLAGER = ENTITIES_REGISTRY.register(
             "trader_animal_villager",
             () -> EntityType.Builder
-                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.TRADER), MobCategory.MISC)
+                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.TRADER), MobCategory.CREATURE)
                     .clientTrackingRange(10)
                     .sized(0.6F, 1.8F)
                     .build("trader_animal_villager")
@@ -46,7 +46,7 @@ public class EntityInit {
     public static final RegistryObject<EntityType<AnimalVillager>> ASSESSOR_ANIMAL_VILLAGER = ENTITIES_REGISTRY.register(
             "assessor_animal_villager",
             () -> EntityType.Builder
-                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.ASSESSOR), MobCategory.MISC)
+                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.ASSESSOR), MobCategory.CREATURE)
                     .clientTrackingRange(10)
                     .sized(0.6F, 1.8F)
                     .build("assessor_animal_villager")
@@ -55,7 +55,7 @@ public class EntityInit {
     public static final RegistryObject<EntityType<AnimalVillager>> PLAYER_TRADER_ANIMAL_VILLAGER = ENTITIES_REGISTRY.register(
             "player_trader_animal_villager",
             () -> EntityType.Builder
-                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.PLAYER_TRADER), MobCategory.MISC)
+                    .<AnimalVillager>of((type, level) -> new AnimalVillager(type, level, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.PLAYER_TRADER), MobCategory.CREATURE)
                     .clientTrackingRange(10)
                     .sized(0.6F, 1.8F)
                     .build("player_trader_animal_villager")

@@ -1,11 +1,9 @@
 package com.agarrity.dynamic_economy.common.world.entity.npc;
 
 import com.agarrity.dynamic_economy.DynamicEconomy;
-import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.network.syncher.DEEntityDataSerializers;
 import com.agarrity.dynamic_economy.common.world.inventory.*;
 import com.agarrity.dynamic_economy.init.EntityInit;
-import com.agarrity.dynamic_economy.init.ItemInit;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -57,10 +55,6 @@ public class AnimalVillager extends Animal implements ITrader {
     private final IItemHandler traderItemStackHandler;
     private Player tradingPlayer = null;
 
-    public AnimalVillager(final EntityType<? extends AnimalVillager> pEntityType, final Level pLevel) {
-        this(pEntityType, pLevel, AnimalVillagerSpecies.getRandomSpecies(), AnimalVillagerProfession.getRandomProfession());
-    }
-
     public AnimalVillager(final EntityType<? extends AnimalVillager> pEntityType, final Level pLevel, final int species, final int profession) {
         super(pEntityType, pLevel);
         ((GroundPathNavigation) this.getNavigation()).setCanOpenDoors(true);
@@ -100,21 +94,9 @@ public class AnimalVillager extends Animal implements ITrader {
     @Override
     public @NotNull InteractionResult mobInteract(final Player pPlayer, @NotNull final InteractionHand pHand) {
         ItemStack itemstack = pPlayer.getItemInHand(pHand);
-        if (itemstack.getItem() == ItemInit.FIXED_CURRENCY.get()) {
-            final var optCurrencyValue = CurrencyHelper.getCurrencyValue(itemstack);
-            if (optCurrencyValue.isEmpty()) {
-                return InteractionResult.PASS;
-            }
-            if (optCurrencyValue.get().isLessThan(CurrencyHelper.getLargestCurrency())) {
-                return InteractionResult.PASS;
-            }
-
+        if (itemstack.getItem() == Items.GOLD_INGOT) {
             this.setInLove(pPlayer);
             this.gameEvent(GameEvent.MOB_INTERACT, this.eyeBlockPosition());
-            if (!this.level.isClientSide) {
-                return InteractionResult.SUCCESS;
-            }
-            return InteractionResult.CONSUME;
         } else if (itemstack.getItem() != Items.VILLAGER_SPAWN_EGG && this.isAlive() && !this.isTrading() && !this.isSleeping() && !pPlayer.isSecondaryUseActive()) {
             if (!this.isBaby()) {
                 if (pHand == InteractionHand.MAIN_HAND) {
@@ -124,12 +106,12 @@ public class AnimalVillager extends Animal implements ITrader {
                 if (!this.level.isClientSide) {
                     this.startTrading(pPlayer);
                 }
-
             }
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
         } else {
             return super.mobInteract(pPlayer, pHand);
         }
+
+        return InteractionResult.sidedSuccess(this.level.isClientSide);
     }
 
     @Override
@@ -137,10 +119,10 @@ public class AnimalVillager extends Animal implements ITrader {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new PanicGoal(this, 2.0D));
         this.goalSelector.addGoal(2, new BreedGoal(this, 0.5D));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, Ingredient.of(ItemInit.CURRENCY_TAG), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, Ingredient.of(Items.GOLD_INGOT), false));
         this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25D));
         this.goalSelector.addGoal(5, new MoveBackToVillageGoal(this, 1.0D, false));
-        this.goalSelector.addGoal(4, new GolemRandomStrollInVillageGoal(this, 0.6D));
+        this.goalSelector.addGoal(4, new StrollThroughVillageGoal(this, 1000));
         this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
