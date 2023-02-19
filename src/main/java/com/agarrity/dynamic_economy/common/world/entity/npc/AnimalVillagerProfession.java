@@ -13,19 +13,20 @@ public class AnimalVillagerProfession {
     public static final float PLAYER_TRADER_THRESHOLD = 0.5F;
     public static final float TRADER_THRESHOLD = 0.7f;
     public static final float BANKER_THRESHOLD = 0.85F;
-    public static final float ASSESSOR_THRESHOLD = 1.0F;
+    public static final float ASSESSOR_THRESHOLD = 0.95F;
 
     public static int getRandomProfession() {
         final var random = ThreadLocalRandom.current();
         final var v = random.nextFloat();
         if (v < PLAYER_TRADER_THRESHOLD) {
             return PLAYER_TRADER;
-        }
-        else if (v < TRADER_THRESHOLD) {
+        } else if (v < TRADER_THRESHOLD) {
             return TRADER;
         } else if (v < BANKER_THRESHOLD) {
             return BANKER;
+        } else if (v < ASSESSOR_THRESHOLD) {
+            return ASSESSOR;
         }
-        return ASSESSOR;
+        return NONE;
     }
 }

@@ -4,6 +4,9 @@ import com.agarrity.dynamic_economy.DynamicEconomy;
 import com.agarrity.dynamic_economy.common.network.syncher.DEEntityDataSerializers;
 import com.agarrity.dynamic_economy.common.world.inventory.*;
 import com.agarrity.dynamic_economy.init.EntityInit;
+import com.agarrity.dynamic_economy.init.SensorInit;
+import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -15,8 +18,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,14 +26,20 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.ai.sensing.SensorType;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.npc.Npc;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -46,10 +53,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
-public class AnimalVillager extends Animal implements ITrader {
-
+public class AnimalVillager extends Villager implements ITrader, Npc {
     public static final int INVENTORY_SIZE = 12;
+
+    private static final ImmutableList<SensorType<? extends Sensor<? super Villager>>> SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_BED, SensorType.HURT_BY, SensorType.VILLAGER_HOSTILES, SensorType.VILLAGER_BABIES, SensorType.SECONDARY_POIS, SensorType.GOLEM_DETECTED, SensorInit.ANIMAL_VILLAGER_TEMPTATIONS);
+    private static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES = ImmutableList.of(MemoryModuleType.HOME, MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE, MemoryModuleType.MEETING_POINT, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.VISIBLE_VILLAGER_BABIES, MemoryModuleType.NEAREST_PLAYERS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.INTERACTION_TARGET, MemoryModuleType.BREED_TARGET, MemoryModuleType.PATH, MemoryModuleType.DOORS_TO_CLOSE, MemoryModuleType.NEAREST_BED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_HOSTILE, MemoryModuleType.SECONDARY_JOB_SITE, MemoryModuleType.HIDING_PLACE, MemoryModuleType.HEARD_BELL_TIME, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.LAST_SLEPT, MemoryModuleType.LAST_WOKEN, MemoryModuleType.LAST_WORKED_AT_POI, MemoryModuleType.GOLEM_DETECTED_RECENTLY, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryModuleType.IS_TEMPTED, MemoryModuleType.TEMPTING_PLAYER);
 
     private static final EntityDataAccessor<AnimalVillagerData> DATA_ANIMAL_VILLAGER = SynchedEntityData.defineId(AnimalVillager.class, DEEntityDataSerializers.ANIMAL_VILLAGER_DATA);
     private final IItemHandler traderItemStackHandler;
@@ -62,6 +72,8 @@ public class AnimalVillager extends Animal implements ITrader {
         this.setCanPickUpLoot(false);
         this.setAnimalVillagerData(this.getAnimalVillagerData().setSpecies(species).setProfession(profession));
 
+        this.setVillagerData(this.getVillagerData().setProfession(VillagerProfession.NONE));
+
         traderItemStackHandler = switch (profession) {
             case AnimalVillagerProfession.PLAYER_TRADER -> new TraderItemStackHandler(INVENTORY_SIZE);
             case AnimalVillagerProfession.TRADER -> new ItemStackHandler(INVENTORY_SIZE);
@@ -70,11 +82,33 @@ public class AnimalVillager extends Animal implements ITrader {
     }
 
     public static AttributeSupplier.@NotNull Builder createAttributes() {
-        final var builder = Mob.createMobAttributes();
-        builder.add(Attributes.MAX_HEALTH, 20.0D);
-        builder.add(Attributes.MOVEMENT_SPEED, 0.2D);
-        builder.add(Attributes.FOLLOW_RANGE, 48.0D);
-        return builder;
+        return Villager.createAttributes();
+    }
+
+    public static ImmutableList<Pair<Integer, ? extends Behavior<? super Villager>>> getCorePackage(float pSpeedModifier) {
+        return ImmutableList.of(Pair.of(0, new Swim(0.8F)), Pair.of(0, new InteractWithDoor()), Pair.of(0, new LookAtTargetSink(45, 90)), Pair.of(0, new VillagerPanicTrigger()), Pair.of(0, new WakeUp()), Pair.of(0, new ReactToBell()), Pair.of(0, new SetRaidStatus()), Pair.of(1, new MoveToTargetSink()), Pair.of(3, new LookAndFollowTradingPlayerSink(pSpeedModifier)), Pair.of(10, new AcquirePoi(PoiType.HOME, MemoryModuleType.HOME, false, Optional.of((byte) 14))), Pair.of(10, new AcquirePoi(PoiType.MEETING, MemoryModuleType.MEETING_POINT, true, Optional.of((byte) 14))), Pair.of(10, new ResetProfession()), Pair.of(0, new FollowTemptation((livingEntity) -> pSpeedModifier)));
+    }
+
+    public static Ingredient getTemptations() {
+        return Ingredient.of(Items.GOLD_INGOT);
+    }
+
+    @Override
+    protected Brain.@NotNull Provider<Villager> brainProvider() {
+        return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+    }
+
+    @Override
+    protected @NotNull Brain<?> makeBrain(@NotNull Dynamic<?> pDynamic) {
+        final var brain = super.makeBrain(pDynamic);
+        ((Brain<Villager>) brain).addActivity(Activity.CORE, getCorePackage(0.5F));
+        return brain;
+    }
+
+    @Override
+    public void refreshBrain(@NotNull ServerLevel pServerLevel) {
+        super.refreshBrain(pServerLevel);
+        this.getBrain().addActivity(Activity.CORE, getCorePackage(0.5F));
     }
 
     @Override
@@ -95,7 +129,8 @@ public class AnimalVillager extends Animal implements ITrader {
     public @NotNull InteractionResult mobInteract(final Player pPlayer, @NotNull final InteractionHand pHand) {
         ItemStack itemstack = pPlayer.getItemInHand(pHand);
         if (itemstack.getItem() == Items.GOLD_INGOT) {
-            this.setInLove(pPlayer);
+            this.getInventory().addItem(new ItemStack(Items.BREAD, 3));
+            this.eatAndDigestFood();
             this.gameEvent(GameEvent.MOB_INTERACT, this.eyeBlockPosition());
         } else if (itemstack.getItem() != Items.VILLAGER_SPAWN_EGG && this.isAlive() && !this.isTrading() && !this.isSleeping() && !pPlayer.isSecondaryUseActive()) {
             if (!this.isBaby()) {
@@ -112,19 +147,6 @@ public class AnimalVillager extends Animal implements ITrader {
         }
 
         return InteractionResult.sidedSuccess(this.level.isClientSide);
-    }
-
-    @Override
-    protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new PanicGoal(this, 2.0D));
-        this.goalSelector.addGoal(2, new BreedGoal(this, 0.5D));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.0D, Ingredient.of(Items.GOLD_INGOT), false));
-        this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25D));
-        this.goalSelector.addGoal(5, new MoveBackToVillageGoal(this, 1.0D, false));
-        this.goalSelector.addGoal(4, new StrollThroughVillageGoal(this, 1000));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
 
     @Override
@@ -252,7 +274,6 @@ public class AnimalVillager extends Animal implements ITrader {
         }
     }
 
-    @Override
     public void openTradingScreen(@NotNull final Player pPlayer, @NotNull final Component pDisplayName) {
         SimpleMenuProvider menu;
         switch (this.getAnimalVillagerData().getProfession()) {
@@ -274,10 +295,6 @@ public class AnimalVillager extends Animal implements ITrader {
         NetworkHooks.openGui((ServerPlayer) pPlayer, menu);
     }
 
-    public SoundEvent getNotifyTradeSound() {
-        return SoundEvents.VILLAGER_YES;
-    }
-
     @Override
     protected void dropAllDeathLoot(DamageSource pDamageSource) {
         Entity entity = pDamageSource.getEntity();
@@ -292,5 +309,18 @@ public class AnimalVillager extends Animal implements ITrader {
 
         if (!net.minecraftforge.common.ForgeHooks.onLivingDrops(this, pDamageSource, drops, i, lastHurtByPlayerTime > 0))
             drops.forEach(e -> level.addFreshEntity(e));
+    }
+
+
+    @Override
+    public void die(@NotNull DamageSource pCause) {
+        if (this.getAnimalVillagerData().getProfession() == AnimalVillagerProfession.PLAYER_TRADER && this.hasInventoryItems()) {
+            return;
+        }
+        if (this.getAnimalVillagerData().getProfession() == AnimalVillagerProfession.PLAYER_TRADER && this.hasInventoryItems()) {
+            return;
+        }
+
+        super.die(pCause);
     }
 }

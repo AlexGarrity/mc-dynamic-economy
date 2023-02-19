@@ -7,7 +7,7 @@ import com.agarrity.dynamic_economy.common.world.entity.npc.AnimalVillagerSpecie
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.SpawnPlacements;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -62,11 +62,10 @@ public class EntityInit {
     );
 
     public static void registerSpawnPlacements() {
-        SpawnPlacements.register(EntityInit.ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Animal::checkAnimalSpawnRules);
-        SpawnPlacements.register(EntityInit.BANKER_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Animal::checkAnimalSpawnRules);
-        SpawnPlacements.register(EntityInit.TRADER_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Animal::checkAnimalSpawnRules);
-        SpawnPlacements.register(EntityInit.PLAYER_TRADER_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Animal::checkAnimalSpawnRules);
-        SpawnPlacements.register(EntityInit.ASSESSOR_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Animal::checkAnimalSpawnRules);
-
+        SpawnPlacements.register(EntityInit.ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Villager::checkMobSpawnRules);
+        SpawnPlacements.register(EntityInit.BANKER_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Villager::checkMobSpawnRules);
+        SpawnPlacements.register(EntityInit.TRADER_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Villager::checkMobSpawnRules);
+        SpawnPlacements.register(EntityInit.PLAYER_TRADER_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Villager::checkMobSpawnRules);
+        SpawnPlacements.register(EntityInit.ASSESSOR_ANIMAL_VILLAGER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING, Villager::checkMobSpawnRules);
     }
 }

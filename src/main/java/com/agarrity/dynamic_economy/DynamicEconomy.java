@@ -10,18 +10,17 @@ import com.agarrity.dynamic_economy.common.economy.bank.CurrencyHelper;
 import com.agarrity.dynamic_economy.common.network.DynamicEconomyPacketHandler;
 import com.agarrity.dynamic_economy.common.network.syncher.DEEntityDataSerializers;
 import com.agarrity.dynamic_economy.common.world.entity.npc.AnimalVillager;
-import com.agarrity.dynamic_economy.init.EntityInit;
-import com.agarrity.dynamic_economy.init.ItemInit;
-import com.agarrity.dynamic_economy.init.MenuInit;
-import com.agarrity.dynamic_economy.init.TriggerInit;
+import com.agarrity.dynamic_economy.init.*;
 import com.agarrity.dynamic_economy.server.commands.DynamicEconomyCommand;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -59,7 +58,7 @@ public class DynamicEconomy {
         ItemInit.ITEMS_REGISTRY.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
-    @Mod.EventBusSubscriber(bus= Mod.EventBusSubscriber.Bus.FORGE)
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class ForgeEvents {
         @SubscribeEvent
         public static void onRegisterCommands(final RegisterCommandsEvent event) {
@@ -149,6 +148,11 @@ public class DynamicEconomy {
             event.put(EntityInit.ASSESSOR_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
             event.put(EntityInit.TRADER_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
             event.put(EntityInit.PLAYER_TRADER_ANIMAL_VILLAGER.get(), AnimalVillager.createAttributes().build());
+        }
+
+        @SubscribeEvent
+        public static void onRegister(final RegistryEvent.Register<SensorType<?>> event) {
+            SensorInit.registerSensors(event);
         }
     }
 }
